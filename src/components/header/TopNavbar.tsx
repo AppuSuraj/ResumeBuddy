@@ -29,6 +29,7 @@ export const TopNavbar: React.FC = () => {
     setActiveTab, 
     setIsJdModalOpen, 
     loadSampleData, 
+    clearResumeToBlank,
     exportAsJson, 
     importFromJson 
   } = useResume();
@@ -267,6 +268,18 @@ export const TopNavbar: React.FC = () => {
                   >
                     <Download className="w-4 h-4 text-emerald-400" />
                     <span>Backup (.json)</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      clearResumeToBlank();
+                      setShowExportMenu(false);
+                      toast.success('Clean Canvas', 'Kept your contact info; cleared previous job content.');
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800 hover:text-white transition"
+                  >
+                    <RefreshCw className="w-4 h-4 text-amber-400" />
+                    <span>Clear to Clean Canvas</span>
                   </button>
 
                   <label className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800 hover:text-white cursor-pointer transition">

@@ -1,4 +1,4 @@
-import { ResumeData } from '../types/resume';
+import { ResumeData, UserProfileCache } from '../types/resume';
 
 export const INITIAL_RESUME_DATA: ResumeData = {
   id: 'default-resume',
@@ -150,3 +150,63 @@ export const INITIAL_RESUME_DATA: ResumeData = {
     paperSize: 'a4',
   },
 };
+
+export const createBlankResume = (
+  profile?: Partial<UserProfileCache>,
+  roleTitle = '',
+  jdText = ''
+): ResumeData => {
+  return {
+    id: `res-${Date.now()}`,
+    title: roleTitle ? `${roleTitle} Resume` : 'New Resume',
+    updatedAt: Date.now(),
+    personal: {
+      fullName: profile?.fullName || '',
+      jobTitle: roleTitle || profile?.jobTitle || '',
+      email: profile?.email || '',
+      phone: profile?.phone || '',
+      location: profile?.location || '',
+      website: profile?.website || '',
+      linkedin: profile?.linkedin || '',
+      github: profile?.github || '',
+      photoUrl: profile?.photoUrl || '',
+      summary: '',
+    },
+    experience: [],
+    education: [],
+    skills: [
+      {
+        id: `skills-${Date.now()}`,
+        categoryName: 'Technical & Professional Skills',
+        skills: [],
+      },
+    ],
+    projects: [],
+    customSections: [],
+    jobTarget: {
+      targetRoleTitle: roleTitle || '',
+      jobDescriptionText: jdText || '',
+      extractedKeywords: [],
+      requiredSkills: [],
+      atsScore: 70,
+      matchFeedback: {
+        matchedKeywords: [],
+        missingKeywords: [],
+        recommendations: [
+          'Add relevant work experience and skills matching the job description to improve your ATS score.',
+        ],
+      },
+    },
+    style: {
+      templateId: 'modern-minimal',
+      primaryColor: '#2563eb',
+      fontFamily: 'Inter',
+      fontSize: 'md',
+      lineSpacing: 'normal',
+      sectionSpacing: 'normal',
+      showPhoto: false,
+      paperSize: 'a4',
+    },
+  };
+};
+

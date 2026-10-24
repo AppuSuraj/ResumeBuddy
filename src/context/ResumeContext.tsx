@@ -1,12 +1,30 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { ResumeData, PersonalDetails, WorkExperience, Education, SkillCategory, Project, CustomSection, StyleConfig, JobDescriptionData, TemplateId } from '../types/resume';
-import { INITIAL_RESUME_DATA } from '../services/defaultData';
+import { 
+  ResumeData, 
+  PersonalDetails, 
+  WorkExperience, 
+  Education, 
+  SkillCategory, 
+  Project, 
+  CustomSection, 
+  StyleConfig, 
+  JobDescriptionData, 
+  TemplateId,
+  UserProfileCache 
+} from '../types/resume';
+import { INITIAL_RESUME_DATA, createBlankResume } from '../services/defaultData';
 import { analyzeJobDescription } from '../services/aiService';
 
 interface ResumeContextType {
   resumeData: ResumeData; // The actively editing resume
   setResumeData: React.Dispatch<React.SetStateAction<ResumeData>>;
   
+  // Persistent User Contact Profile Cache
+  userProfile: UserProfileCache;
+  updateUserProfile: (profile: Partial<UserProfileCache>) => void;
+  startCleanResumeWithProfile: (roleTitle: string, jdText: string) => void;
+  clearResumeToBlank: () => void;
+
   // Multi-Resume Management
   resumes: ResumeData[];
   currentResumeId: string;
@@ -58,8 +76,58 @@ const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
 const LOCAL_STORAGE_KEY_V1 = 'resumebuddy_resume_data_v1';
 const LOCAL_STORAGE_ALL_RESUMES = 'resumebuddy_all_resumes_v2';
 const LOCAL_STORAGE_CURRENT_ID = 'resumebuddy_current_id_v2';
+const LOCAL_STORAGE_USER_PROFILE = 'resumebuddy_user_profile_cache';
+
+// Load or extract user profile contact cache
+const getStoredUserProfile = (): UserProfileCache => {
+  try {
+    const saved = localStorage.getItem(LOCAL_STORAGE_USER_PROFILE);
+    if (saved) return JSON.parse(saved);
+
+    // If no dedicated cache exists yet, inspect existing resumes for non-sample candidate data
+    const savedResumes = localStorage.getItem(LOCAL_STORAGE_ALL_RESUMES);
+    if (savedResumes) {
+      const parsed = JSON.parse(savedResumes);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        const last = parsed[parsed.length - 1];
+        if (last?.personal?.fullName && !last.personal.fullName.includes('Alex Morgan')) {
+          const profile: UserProfileCache = {
+            fullName: last.personal.fullName || '',
+            jobTitle: last.personal.jobTitle || '',
+            email: last.personal.email || '',
+            phone: last.personal.phone || '',
+            location: last.personal.location || '',
+            website: last.personal.website || '',
+            linkedin: last.personal.linkedin || '',
+            github: last.personal.github || '',
+            photoUrl: last.personal.photoUrl || '',
+          };
+          localStorage.setItem(LOCAL_STORAGE_USER_PROFILE, JSON.stringify(profile));
+          return profile;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to load user profile cache:', e);
+  }
+
+  return {
+    fullName: '',
+    jobTitle: '',
+    email: '',
+    phone: '',
+    location: '',
+    website: '',
+    linkedin: '',
+    github: '',
+    photoUrl: '',
+  };
+};
 
 export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  // Persistent separate profile cache
+  const [userProfile, setUserProfile] = useState<UserProfileCache>(getStoredUserProfile);
+
   // Load resumes list
   const [resumes, setResumes] = useState<ResumeData[]>(() => {
     try {
@@ -68,7 +136,6 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         return JSON.parse(savedResumes);
       }
       
-      // Migration from v1 single resume to v2 multi-resume
       const legacySaved = localStorage.getItem(LOCAL_STORAGE_KEY_V1);
       if (legacySaved) {
         const parsed = JSON.parse(legacySaved);
@@ -89,7 +156,6 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       const savedId = localStorage.getItem(LOCAL_STORAGE_CURRENT_ID);
       if (savedId) return savedId;
     } catch (e) {}
-    // If no saved ID, use the first resume in list or default
     return resumes[0]?.id || INITIAL_RESUME_DATA.id;
   });
 
@@ -100,9 +166,7 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   });
 
   const [activeTab, setActiveTab] = useState<string>('target');
-  const [isJdModalOpen, setIsJdModalOpen] = useState<boolean>(() => {
-    return !resumeData.jobTarget?.jobDescriptionText;
-  });
+  const [isJdModalOpen, setIsJdModalOpen] = useState<boolean>(true);
 
   // Keep `resumeData` changes synced to the `resumes` array and local storage
   useEffect(() => {
@@ -134,15 +198,52 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, [currentResumeId]);
 
+  // Profile Cache Mutator
+  const updateUserProfile = (profileUpdate: Partial<UserProfileCache>) => {
+    setUserProfile(prev => {
+      const updated = { ...prev, ...profileUpdate };
+      try {
+        localStorage.setItem(LOCAL_STORAGE_USER_PROFILE, JSON.stringify(updated));
+      } catch (e) {
+        console.warn('Failed to cache user profile:', e);
+      }
+      return updated;
+    });
+  };
+
+  // Start Clean Targeted Resume using cached profile info
+  const startCleanResumeWithProfile = (roleTitle: string, jdText: string) => {
+    const newId = `res-${Date.now()}`;
+    const cleanResume = createBlankResume(userProfile, roleTitle, jdText);
+    cleanResume.id = newId;
+    cleanResume.title = roleTitle ? `${roleTitle} Resume` : 'Targeted Resume';
+    
+    // Add new clean resume to resumes array and set as active
+    setResumes(prev => [...prev, cleanResume]);
+    setCurrentResumeId(newId);
+    setResumeData(cleanResume);
+    setActiveTab('target');
+  };
+
+  const clearResumeToBlank = () => {
+    const cleanResume = createBlankResume(
+      userProfile, 
+      resumeData.jobTarget.targetRoleTitle, 
+      resumeData.jobTarget.jobDescriptionText
+    );
+    cleanResume.id = resumeData.id;
+    cleanResume.title = resumeData.title;
+    setResumeData(cleanResume);
+  };
+
   // Multi-Resume Actions
   const createNewResume = (title = 'New Resume') => {
     const newId = `res-${Date.now()}`;
-    const newResume: ResumeData = {
-      ...INITIAL_RESUME_DATA,
-      id: newId,
-      title,
-      updatedAt: Date.now()
-    };
+    const newResume = createBlankResume(userProfile);
+    newResume.id = newId;
+    newResume.title = title;
+    newResume.updatedAt = Date.now();
+    
     setResumes(prev => [...prev, newResume]);
     setCurrentResumeId(newId);
   };
@@ -154,14 +255,12 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const deleteResume = (id: string) => {
     setResumes(prev => {
       const filtered = prev.filter(r => r.id !== id);
-      // If we deleted the active one, switch to the first available, or create a new one
       if (id === currentResumeId) {
         if (filtered.length > 0) {
           setCurrentResumeId(filtered[0].id);
         } else {
-          // If all deleted, create a fresh one
           createNewResume('My Resume');
-          return prev; // let createNewResume handle setting state
+          return prev;
         }
       }
       return filtered;
@@ -192,6 +291,15 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       ...prev,
       personal: { ...prev.personal, ...personal },
     }));
+
+    // Auto-sync contact details to persistent profile cache
+    const contactKeys: (keyof UserProfileCache)[] = [
+      'fullName', 'email', 'phone', 'location', 'website', 'linkedin', 'github', 'photoUrl'
+    ];
+    const hasContactUpdate = Object.keys(personal).some(k => contactKeys.includes(k as any));
+    if (hasContactUpdate) {
+      updateUserProfile(personal as Partial<UserProfileCache>);
+    }
   };
 
   const updateExperienceItem = (id: string, exp: Partial<WorkExperience>) => {
@@ -204,13 +312,13 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const addExperienceItem = () => {
     const newItem: WorkExperience = {
       id: `exp-${Date.now()}`,
-      jobTitle: 'New Job Title',
-      company: 'Company Name',
-      location: 'City, State',
-      startDate: '2023-01',
+      jobTitle: '',
+      company: '',
+      location: '',
+      startDate: '',
       endDate: 'Present',
       isCurrent: true,
-      highlights: ['Key responsibility or achievement with metrics.'],
+      highlights: ['Key achievement or responsibility with metrics.'],
     };
     setResumeData((prev) => ({
       ...prev,
@@ -244,11 +352,11 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const addEducationItem = () => {
     const newItem: Education = {
       id: `edu-${Date.now()}`,
-      degree: 'Bachelor of Science / Arts',
-      institution: 'University Name',
-      location: 'City, State',
-      startDate: '2018',
-      endDate: '2022',
+      degree: '',
+      institution: '',
+      location: '',
+      startDate: '',
+      endDate: '',
     };
     setResumeData((prev) => ({
       ...prev,
@@ -273,8 +381,8 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const addSkillCategory = () => {
     const newItem: SkillCategory = {
       id: `skill-${Date.now()}`,
-      categoryName: 'Technical Skills',
-      skills: ['Skill 1', 'Skill 2', 'Skill 3'],
+      categoryName: 'Technical & Professional Skills',
+      skills: [],
     };
     setResumeData((prev) => ({
       ...prev,
@@ -299,10 +407,10 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const addProjectItem = () => {
     const newItem: Project = {
       id: `proj-${Date.now()}`,
-      name: 'Project Title',
-      description: 'Brief description of the project purpose and impact.',
-      techStack: ['React', 'Node.js'],
-      highlights: ['Key milestone achieved.'],
+      name: '',
+      description: '',
+      techStack: [],
+      highlights: [],
     };
     setResumeData((prev) => ({
       ...prev,
@@ -331,10 +439,10 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       items: [
         {
           id: `item-${Date.now()}`,
-          title: 'Title / Award / Certification',
-          subtitle: 'Issuing Organization',
-          date: '2023',
-          description: 'Key details or description.',
+          title: '',
+          subtitle: '',
+          date: '',
+          description: '',
         },
       ],
     };
@@ -373,11 +481,7 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const clearAllData = () => {
-    setResumeData({
-      ...INITIAL_RESUME_DATA,
-      id: resumeData.id,
-      title: resumeData.title,
-    });
+    clearResumeToBlank();
   };
 
   const exportAsJson = () => {
@@ -408,6 +512,10 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       value={{
         resumeData,
         setResumeData,
+        userProfile,
+        updateUserProfile,
+        startCleanResumeWithProfile,
+        clearResumeToBlank,
         resumes,
         currentResumeId,
         createNewResume,

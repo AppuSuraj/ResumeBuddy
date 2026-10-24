@@ -141,3 +141,15 @@ export interface AiSummarySuggestion {
   styleName: string; // e.g., "Impactful & Results-Driven", "Technical & Concise", "Executive"
   summary: string;
 }
+
+export interface UserProfileCache {
+  fullName: string;
+  jobTitle?: string;
+  email: string;
+  phone: string;
+  location: string;
+  website?: string;
+  linkedin?: string;
+  github?: string;
+  photoUrl?: string;
+}
