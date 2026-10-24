@@ -1,5 +1,6 @@
 import React from 'react';
 import { ResumeData } from '../../types/resume';
+import { ProjectDescription } from './ProjectDescription';
 
 export const ProfessionalTwoToneTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
   const { personal, experience, education, skills, projects, style } = data;
@@ -124,8 +125,14 @@ export const ProfessionalTwoToneTemplate: React.FC<{ data: ResumeData }> = ({ da
             <div className="space-y-4">
               {projects.map((proj) => (
                 <div key={proj.id} className="text-xs">
-                  <div className="font-bold text-slate-900 mb-0.5">{proj.name}</div>
-                  <div className="text-slate-700 leading-relaxed text-justify">{proj.description}</div>
+                  <div className="font-bold text-slate-900 mb-1">{proj.name}</div>
+                  {proj.description && (
+                    <ProjectDescription
+                      description={proj.description}
+                      techStack={proj.techStack}
+                      primaryColor={primaryColor}
+                    />
+                  )}
                   {(proj.liveUrl || proj.githubUrl) && <div className="text-blue-600 mt-1">{(proj.liveUrl || proj.githubUrl)}</div>}
                 </div>
               ))}

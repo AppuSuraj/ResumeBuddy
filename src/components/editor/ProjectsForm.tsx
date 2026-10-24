@@ -96,16 +96,34 @@ export const ProjectsForm: React.FC = () => {
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">
-                  Project Description & Outcomes
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-400">
+                    Project Description & Outcomes
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const current = proj.description || '';
+                      const next = current.length > 0 && !current.endsWith('\n') 
+                        ? `${current}\n• ` 
+                        : `${current}• `;
+                      updateProjectItem(proj.id, { description: next });
+                    }}
+                    className="text-[10px] text-blue-400 hover:text-blue-300 bg-blue-950/40 border border-blue-900/50 rounded px-1.5 py-0.5 transition"
+                  >
+                    + Add Bullet •
+                  </button>
+                </div>
                 <textarea
-                  rows={2}
+                  rows={4}
                   value={proj.description}
                   onChange={(e) => updateProjectItem(proj.id, { description: e.target.value })}
-                  placeholder="Built an analytics dashboard tracking 100k+ events/sec; optimized query response times by 40%."
-                  className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 leading-relaxed"
+                  placeholder="• Designed and deployed high-throughput monitoring&#10;• Fetches live metrics and analyzes key performance indicators&#10;• Reduced latency by 35% through query caching"
+                  className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 leading-relaxed font-sans"
                 />
+                <p className="text-[10px] text-slate-500 mt-1">
+                  Each line or • bullet will automatically format as an aligned bullet point in your preview.
+                </p>
               </div>
             </div>
           ))}

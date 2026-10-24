@@ -1,5 +1,6 @@
 import React from 'react';
 import { ResumeData } from '../../types/resume';
+import { ProjectDescription } from './ProjectDescription';
 
 export const CompactOnePagerTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
   const { personal, experience, education, skills, projects, customSections, style } = data;
@@ -96,9 +97,13 @@ export const CompactOnePagerTemplate: React.FC<{ data: ResumeData }> = ({ data }
               Projects
             </h2>
             {projects.map((proj) => (
-              <div key={proj.id} className="text-[11px]">
-                <span className="font-semibold text-slate-800">{proj.name}: </span>
-                <span className="text-slate-600">{proj.description}</span>
+              <div key={proj.id} className="text-[11px] mb-1.5">
+                <span className="font-semibold text-slate-800">{proj.name}</span>
+                <ProjectDescription
+                  description={proj.description}
+                  techStack={proj.techStack}
+                  primaryColor={primaryColor}
+                />
               </div>
             ))}
           </section>

@@ -1,5 +1,6 @@
 import React from 'react';
 import { ResumeData } from '../../types/resume';
+import { ProjectDescription } from './ProjectDescription';
 
 export const AcademicTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
   const { personal, experience, education, skills, projects, customSections, style } = data;
@@ -86,10 +87,15 @@ export const AcademicTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
           </h2>
           <div className="space-y-2 text-xs">
             {projects.map((proj) => (
-              <div key={proj.id}>
-                <span className="font-bold">{proj.name}. </span>
-                <span className="text-slate-800">{proj.description} </span>
-                {proj.techStack && <span className="italic text-slate-600">[{proj.techStack.join(', ')}]</span>}
+              <div key={proj.id} className="mb-2">
+                <span className="font-bold">{proj.name}</span>
+                {proj.description && (
+                  <ProjectDescription
+                    description={proj.description}
+                    techStack={proj.techStack}
+                    primaryColor="#0f172a"
+                  />
+                )}
               </div>
             ))}
           </div>

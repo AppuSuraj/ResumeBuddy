@@ -1,5 +1,6 @@
 import React from 'react';
 import { ResumeData } from '../../types/resume';
+import { ProjectDescription } from './ProjectDescription';
 
 export const ModernMinimalTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
   const { personal, experience, education, skills, projects, customSections, style } = data;
@@ -131,7 +132,12 @@ export const ModernMinimalTemplate: React.FC<{ data: ResumeData }> = ({ data }) 
                     </span>
                   )}
                 </div>
-                {proj.description && <p className="text-xs text-slate-700 mt-1">{proj.description}</p>}
+                {proj.description && (
+                  <ProjectDescription
+                    description={proj.description}
+                    primaryColor={style.primaryColor}
+                  />
+                )}
               </div>
             ))}
           </div>

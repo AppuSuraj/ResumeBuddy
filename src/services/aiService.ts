@@ -8,6 +8,10 @@ export function getStoredApiKey(): string {
   return localStorage.getItem(GEMINI_API_KEY_STORAGE_KEY) || '';
 }
 
+export function hasApiKey(): boolean {
+  return Boolean(getStoredApiKey() && getStoredApiKey().trim().length > 5);
+}
+
 export function setStoredApiKey(key: string): void {
   if (key) {
     localStorage.setItem(GEMINI_API_KEY_STORAGE_KEY, key);
@@ -213,6 +217,95 @@ export function getSuggestedSkills(resumeData: ResumeData): string[] {
   return Array.from(suggestions)
     .filter(skill => !existingSkills.has(skill.toLowerCase().trim()) && !junkSet.has(skill.toLowerCase().trim()))
     .slice(0, 20);
+}
+
+/**
+ * Fetches real-time AI skill suggestions powered by Gemini (or smart offline engine)
+ * based on role title, category, target JD, and what the user is typing in the input.
+ */
+export async function getLiveAiSkillSuggestions(params: {
+  roleTitle: string;
+  categoryName?: string;
+  currentInput?: string;
+  existingSkills: string[];
+  jobDescription?: string;
+}): Promise<string[]> {
+  const { roleTitle, categoryName = '', currentInput = '', existingSkills, jobDescription = '' } = params;
+  const existingSet = new Set(existingSkills.map(s => s.toLowerCase().trim()));
+  const apiKey = getStoredApiKey();
+
+  // If Gemini API Key is provided, call Gemini for rich dynamic suggestions
+  if (apiKey) {
+    try {
+      const ai = new GoogleGenAI({ apiKey });
+      const prompt = `You are an elite technical recruiter and resume ATS optimization specialist.
+Suggest 8 highly relevant, industry-standard skill tags for a candidate.
+Target Role: "${roleTitle || 'Professional'}"
+Category: "${categoryName || 'Technical & Professional Skills'}"
+${currentInput.trim() ? `User is typing query: "${currentInput.trim()}" (prioritize skills starting with or matching this query)` : ''}
+${jobDescription.trim() ? `Target Job Description Context: "${jobDescription.slice(0, 400)}"` : ''}
+Already added skills to omit: ${Array.from(existingSet).slice(0, 30).join(', ')}
+
+Return ONLY a valid JSON array of strings (e.g. ["Active Directory", "PowerShell", "Azure DevOps"]). No explanation, no markdown ticks.`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+      });
+
+      if (response.text) {
+        const cleaned = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+        const jsonMatch = cleaned.match(/\[[\s\S]*\]/);
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0]);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const filtered = parsed
+              .map((s: any) => String(s).trim())
+              .filter((s: string) => s.length > 1 && !existingSet.has(s.toLowerCase()));
+            if (filtered.length > 0) {
+              return filtered.slice(0, 8);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Gemini skill suggestions failed, falling back to local dictionary:', err);
+    }
+  }
+
+  // Fast & Smart Offline Heuristic Fallback
+  const q = currentInput.trim().toLowerCase();
+  const allSkills = Array.from(new Set([
+    ...COMMON_TECH_KEYWORDS,
+    ...COMMON_SOFT_SKILLS,
+    'Active Directory', 'Azure AD', 'Office 365', 'ServiceNow', 'ITIL', 'Windows Server',
+    'PowerShell', 'Remote Desktop (RDP)', 'Hardware Diagnostics', 'TCP/IP & DNS',
+    'Ticketing Systems', 'Troubleshooting', 'MFA / RSA', 'Salesforce', 'Jira Service Management',
+    'Zendesk', 'Okta', 'Intune', 'SCCM', 'Linux', 'Ubuntu', 'Bash', 'Terraform', 'Ansible',
+    'Docker', 'Kubernetes', 'Helm', 'CI/CD Pipelines', 'GitHub Actions', 'Jenkins',
+    'Postman', 'Swagger', 'Grafana', 'Prometheus', 'Datadog', 'Splunk', 'Wireshark'
+  ]));
+
+  if (q) {
+    const startsWithMatches = allSkills.filter(s => s.toLowerCase().startsWith(q) && !existingSet.has(s.toLowerCase()));
+    const containsMatches = allSkills.filter(s => !s.toLowerCase().startsWith(q) && s.toLowerCase().includes(q) && !existingSet.has(s.toLowerCase()));
+    return [...startsWithMatches, ...containsMatches].slice(0, 8);
+  }
+
+  // Default role-relevant suggestions if query is empty
+  const roleLower = roleTitle.toLowerCase();
+  const matched = allSkills.filter(s => {
+    if (existingSet.has(s.toLowerCase())) return false;
+    if (roleLower.includes('support') || roleLower.includes('desk') || roleLower.includes('specialist')) {
+      return ['Office 365', 'Active Directory', 'ServiceNow', 'ITIL', 'PowerShell', 'TCP/IP & DNS', 'MFA / RSA', 'Ticketing Systems'].includes(s);
+    }
+    if (roleLower.includes('dev') || roleLower.includes('eng') || roleLower.includes('frontend') || roleLower.includes('react')) {
+      return ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'Docker', 'AWS', 'Git', 'CI/CD Pipelines'].includes(s);
+    }
+    return true;
+  });
+
+  return matched.slice(0, 8);
 }
 
 /**

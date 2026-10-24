@@ -1,5 +1,6 @@
 import React from 'react';
 import { ResumeData } from '../../types/resume';
+import { ProjectDescription } from './ProjectDescription';
 
 export const ModernSidebarTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
   const { personal, experience, education, skills, projects, style } = data;
@@ -113,7 +114,11 @@ export const ModernSidebarTemplate: React.FC<{ data: ResumeData }> = ({ data }) 
               {projects.map((proj) => (
                 <div key={proj.id} className="text-xs border border-slate-100 rounded-lg p-3 bg-slate-50/50">
                   <div className="font-bold text-slate-900 mb-1">{proj.name}</div>
-                  <div className="text-slate-700 leading-relaxed">{proj.description}</div>
+                  <ProjectDescription
+                    description={proj.description}
+                    techStack={proj.techStack}
+                    primaryColor={style.primaryColor}
+                  />
                   {(proj.liveUrl || proj.githubUrl) && <div className="text-blue-600 mt-1.5 hover:underline">{(proj.liveUrl || proj.githubUrl)}</div>}
                 </div>
               ))}

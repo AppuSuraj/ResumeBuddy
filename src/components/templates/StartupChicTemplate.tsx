@@ -1,5 +1,6 @@
 import React from 'react';
 import { ResumeData } from '../../types/resume';
+import { ProjectDescription } from './ProjectDescription';
 
 export const StartupChicTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
   const { personal, experience, education, skills, projects, customSections, style } = data;
@@ -109,7 +110,11 @@ export const StartupChicTemplate: React.FC<{ data: ResumeData }> = ({ data }) =>
             {projects.map((proj) => (
               <div key={proj.id} className="text-xs">
                 <div className="font-bold text-slate-900">{proj.name}</div>
-                <div className="text-slate-600">{proj.description}</div>
+                <ProjectDescription
+                  description={proj.description}
+                  techStack={proj.techStack}
+                  primaryColor={primaryColor}
+                />
               </div>
             ))}
           </section>

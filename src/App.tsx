@@ -15,7 +15,7 @@ import { TemplateSelector } from './components/editor/TemplateSelector';
 import { StyleCustomizer } from './components/editor/StyleCustomizer';
 import { TemplateRenderer, TEMPLATE_METADATA } from './components/templates/TemplateRenderer';
 import { TemplateId } from './types/resume';
-import { ZoomIn, ZoomOut, Maximize2, Eye, Layout, Palette } from 'lucide-react';
+import { ZoomIn, ZoomOut, Maximize2, Eye, Layout, Palette, Edit3 } from 'lucide-react';
 
 const QUICK_COLORS = [
   '#2563eb', // Royal Blue
@@ -30,6 +30,7 @@ const QUICK_COLORS = [
 export const MainApp: React.FC = () => {
   const { resumeData, activeTab, updateStyleConfig } = useResume();
   const [zoomLevel, setZoomLevel] = useState(100);
+  const [mobileView, setMobileView] = useState<'editor' | 'preview'>('editor');
 
   const renderActiveTabContent = () => {
     switch (activeTab) {
@@ -63,10 +64,40 @@ export const MainApp: React.FC = () => {
       {/* Top Navbar */}
       <TopNavbar />
 
+      {/* Mobile Screen Switcher Bar (Visible on phones/tablets < md) */}
+      <div className="md:hidden flex items-center justify-center px-4 py-2 bg-slate-900 border-b border-slate-800">
+        <div className="flex bg-slate-950 p-1 rounded-xl w-full max-w-xs border border-slate-800">
+          <button
+            onClick={() => setMobileView('editor')}
+            className={`flex-1 py-1 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition ${
+              mobileView === 'editor'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            <span>Form Editor</span>
+          </button>
+          <button
+            onClick={() => setMobileView('preview')}
+            className={`flex-1 py-1 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition ${
+              mobileView === 'preview'
+                ? 'bg-blue-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5" />
+            <span>Live Preview</span>
+          </button>
+        </div>
+      </div>
+
       {/* Main Split-Screen Workspace */}
       <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Left Side: Form Editor Panel */}
-        <div className="w-full md:w-[46%] lg:w-[42%] bg-slate-900/95 border-r border-slate-800/80 flex flex-col h-[calc(100vh-57px)]">
+        <div className={`w-full md:w-[46%] lg:w-[42%] bg-slate-900/95 border-r border-slate-800/80 flex flex-col h-[calc(100vh-105px)] md:h-[calc(100vh-57px)] ${
+          mobileView === 'editor' ? 'flex' : 'hidden md:flex'
+        }`}>
           <EditorTabs />
           <div className="flex-1 overflow-y-auto custom-scrollbar">
             {renderActiveTabContent()}
@@ -74,7 +105,9 @@ export const MainApp: React.FC = () => {
         </div>
 
         {/* Right Side: Live WYSIWYG Resume Preview */}
-        <div className="w-full md:w-[54%] lg:w-[58%] bg-slate-950 flex flex-col h-[calc(100vh-57px)] relative overflow-hidden">
+        <div className={`w-full md:w-[54%] lg:w-[58%] bg-slate-950 flex flex-col h-[calc(100vh-105px)] md:h-[calc(100vh-57px)] relative overflow-hidden ${
+          mobileView === 'preview' ? 'flex' : 'hidden md:flex'
+        }`}>
           {/* Live Preview Controls Header */}
           <div className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 px-4 py-2 flex items-center justify-between z-10 gap-3">
             {/* Left: Quick Template Selector & Page Format Badge */}

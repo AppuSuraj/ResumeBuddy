@@ -1,5 +1,6 @@
 import React from 'react';
 import { ResumeData } from '../../types/resume';
+import { ProjectDescription } from './ProjectDescription';
 
 export const TechDeveloperTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
   const { personal, experience, education, skills, projects, customSections, style } = data;
@@ -110,7 +111,12 @@ export const TechDeveloperTemplate: React.FC<{ data: ResumeData }> = ({ data }) 
                     </span>
                   )}
                 </div>
-                <p className="text-xs text-slate-300 mt-1">{proj.description}</p>
+                <ProjectDescription
+                  description={proj.description}
+                  primaryColor="#10b981"
+                  textColorClass="text-slate-300"
+                  bulletColorClass="text-emerald-400"
+                />
               </div>
             ))}
           </div>

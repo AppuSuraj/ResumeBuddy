@@ -1,5 +1,6 @@
 import React from 'react';
 import { ResumeData } from '../../types/resume';
+import { ProjectDescription } from './ProjectDescription';
 
 export const CreativeTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
   const { personal, experience, education, skills, projects, customSections, style } = data;
@@ -122,8 +123,14 @@ export const CreativeTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
               <div className="space-y-3">
                 {projects.map((proj) => (
                   <div key={proj.id} className="text-xs bg-slate-50 p-3 rounded-lg">
-                    <h3 className="font-bold text-slate-900">{proj.name}</h3>
-                    <p className="text-slate-600 mt-1">{proj.description}</p>
+                    <h3 className="font-bold text-slate-900 mb-1">{proj.name}</h3>
+                    {proj.description && (
+                      <ProjectDescription
+                        description={proj.description}
+                        techStack={proj.techStack}
+                        primaryColor={primaryColor}
+                      />
+                    )}
                   </div>
                 ))}
               </div>

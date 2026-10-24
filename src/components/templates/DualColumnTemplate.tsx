@@ -1,5 +1,6 @@
 import React from 'react';
 import { ResumeData } from '../../types/resume';
+import { ProjectDescription } from './ProjectDescription';
 
 export const DualColumnTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
   const { personal, experience, education, skills, projects, customSections, style } = data;
@@ -122,7 +123,11 @@ export const DualColumnTemplate: React.FC<{ data: ResumeData }> = ({ data }) => 
               {projects.map((proj) => (
                 <div key={proj.id}>
                   <h3 className="text-xs font-bold text-slate-900">{proj.name}</h3>
-                  <p className="text-xs text-slate-600 mt-0.5">{proj.description}</p>
+                  <ProjectDescription
+                    description={proj.description}
+                    techStack={proj.techStack}
+                    primaryColor={style.primaryColor}
+                  />
                 </div>
               ))}
             </div>
