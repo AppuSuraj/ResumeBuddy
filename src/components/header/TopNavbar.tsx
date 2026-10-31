@@ -16,11 +16,15 @@ import {
   Layers, 
   ChevronDown,
   Download,
-  Share2
+  Share2,
+  Lock,
+  Shield,
+  KeyRound
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ResumeManagerModal } from './ResumeManagerModal';
 import { UploadResumeModal } from '../onboarding/UploadResumeModal';
+import { logoutAdmin, changeMasterPassword } from '../../services/adminAuthService';
 
 export const TopNavbar: React.FC = () => {
   const { 
@@ -44,7 +48,50 @@ export const TopNavbar: React.FC = () => {
   const [apiKeyInput, setApiKeyInput] = useState(getStoredApiKey());
   const [savedKeySuccess, setSavedKeySuccess] = useState(false);
 
+  // Admin Security modal states
+  const [settingsTab, setSettingsTab] = useState<'ai' | 'security'>('ai');
+  const [currentPasswordInput, setCurrentPasswordInput] = useState('');
+  const [newPasswordInput, setNewPasswordInput] = useState('');
+  const [confirmNewPasswordInput, setConfirmNewPasswordInput] = useState('');
+  const [securityMsg, setSecurityMsg] = useState<{ text: string; isError: boolean } | null>(null);
+  const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
+
   const hasApiKey = Boolean(getStoredApiKey());
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSecurityMsg(null);
+    if (!currentPasswordInput) {
+      setSecurityMsg({ text: 'Please enter your current master password.', isError: true });
+      return;
+    }
+    if (newPasswordInput.length < 4) {
+      setSecurityMsg({ text: 'New password must be at least 4 characters.', isError: true });
+      return;
+    }
+    if (newPasswordInput !== confirmNewPasswordInput) {
+      setSecurityMsg({ text: 'New passwords do not match.', isError: true });
+      return;
+    }
+    setIsUpdatingPassword(true);
+    try {
+      const res = await changeMasterPassword(currentPasswordInput, newPasswordInput);
+      if (res.success) {
+        setSecurityMsg({ text: 'Master password updated successfully!', isError: false });
+        setCurrentPasswordInput('');
+        setNewPasswordInput('');
+        setConfirmNewPasswordInput('');
+        toast.success('Security Updated', 'Master admin password changed.');
+      } else {
+        setSecurityMsg({ text: res.message, isError: true });
+        toast.error('Update Failed', res.message);
+      }
+    } catch {
+      setSecurityMsg({ text: 'Failed to update master password.', isError: true });
+    } finally {
+      setIsUpdatingPassword(false);
+    }
+  };
 
   const handlePdfExport = async () => {
     setIsExportingPdf(true);
@@ -206,7 +253,7 @@ export const TopNavbar: React.FC = () => {
           {/* AI Settings Button */}
           <button
             onClick={() => setShowAiModal(true)}
-            title={hasApiKey ? 'Gemini API Configured (Active)' : 'Configure Gemini API Key (Optional)'}
+            title={hasApiKey ? 'Settings & Security (Active)' : 'Configure Gemini API Key & Admin Security'}
             className={`relative p-2 rounded-xl border transition ${
               hasApiKey
                 ? 'bg-blue-950/50 border-blue-800/80 text-blue-300 hover:bg-blue-900/60'
@@ -217,6 +264,18 @@ export const TopNavbar: React.FC = () => {
             {hasApiKey && (
               <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-slate-900" />
             )}
+          </button>
+
+          {/* Lock Workspace Admin Button */}
+          <button
+            onClick={() => {
+              logoutAdmin();
+              toast.info('Workspace Locked', 'Master admin session ended.');
+            }}
+            title="Lock Workspace (Admin Logout)"
+            className="p-2 rounded-xl border border-slate-700/80 bg-slate-800/70 text-slate-400 hover:text-rose-400 hover:bg-slate-800 hover:border-rose-900/50 transition"
+          >
+            <Lock className="w-4 h-4" />
           </button>
 
           {/* Export Dropdown Group */}
@@ -297,62 +356,198 @@ export const TopNavbar: React.FC = () => {
         </div>
       </header>
 
-      {/* AI Settings Modal */}
+      {/* Settings & Security Modal */}
       {showAiModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="bg-slate-900 border border-slate-800 text-slate-100 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
+            {/* Modal Header & Tabs */}
             <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-              <h3 className="text-base font-bold text-white flex items-center gap-2">
-                <Key className="w-4 h-4 text-blue-400" />
-                AI Engine Configuration
-              </h3>
+              <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setSettingsTab('ai')}
+                  className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg transition ${
+                    settingsTab === 'ai'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Key className="w-3.5 h-3.5" />
+                  <span>AI Engine</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSettingsTab('security')}
+                  className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg transition ${
+                    settingsTab === 'security'
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>Admin Security</span>
+                </button>
+              </div>
+
               <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
-                Gemini 2.5
+                {settingsTab === 'ai' ? 'Gemini 2.5' : 'SHA-256'}
               </span>
             </div>
 
-            <p className="text-xs text-slate-400 leading-relaxed">
-              ResumeBuddy has an offline AI engine built right in, so you can tailor summaries and bullets with zero setup. 
-              To connect live Gemini LLM capabilities, paste your Google AI Studio API key below.
-            </p>
+            {/* Tab 1: AI Engine Configuration */}
+            {settingsTab === 'ai' && (
+              <>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  ResumeBuddy has an offline AI engine built right in, so you can tailor summaries and bullets with zero setup. 
+                  To connect live Gemini LLM capabilities, paste your Google AI Studio API key below.
+                </p>
 
-            <form onSubmit={handleSaveApiKey} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">
-                  Gemini API Key (Optional)
-                </label>
-                <input
-                  type="password"
-                  value={apiKeyInput}
-                  onChange={(e) => setApiKeyInput(e.target.value)}
-                  placeholder="AIzaSy..."
-                  className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500"
-                />
-              </div>
+                <form onSubmit={handleSaveApiKey} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                      Gemini API Key (Optional)
+                    </label>
+                    <input
+                      type="password"
+                      value={apiKeyInput}
+                      onChange={(e) => setApiKeyInput(e.target.value)}
+                      placeholder="AIzaSy..."
+                      className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500"
+                    />
+                  </div>
 
-              {savedKeySuccess && (
-                <div className="p-2.5 rounded-xl bg-emerald-950/80 border border-emerald-800 text-emerald-300 text-xs flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>API preference updated successfully!</span>
-                </div>
-              )}
+                  {savedKeySuccess && (
+                    <div className="p-2.5 rounded-xl bg-emerald-950/80 border border-emerald-800 text-emerald-300 text-xs flex items-center gap-2">
+                      <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>API preference updated successfully!</span>
+                    </div>
+                  )}
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-slate-800/80">
-                <button
-                  type="button"
-                  onClick={() => setShowAiModal(false)}
-                  className="px-3.5 py-1.5 text-xs text-slate-400 hover:text-white transition"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-md transition"
-                >
-                  Save Settings
-                </button>
-              </div>
-            </form>
+                  <div className="flex justify-end gap-2 pt-2 border-t border-slate-800/80">
+                    <button
+                      type="button"
+                      onClick={() => setShowAiModal(false)}
+                      className="px-3.5 py-1.5 text-xs text-slate-400 hover:text-white transition"
+                    >
+                      Close
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-4 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-md transition"
+                    >
+                      Save Settings
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
+
+            {/* Tab 2: Admin Security & Master Password */}
+            {settingsTab === 'security' && (
+              <>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Manage your master admin credentials. Only the SHA-256 hash is verified in-browser to protect your GitHub Pages deployment.
+                </p>
+
+                {securityMsg && (
+                  <div
+                    className={`p-2.5 rounded-xl text-xs flex items-center gap-2 ${
+                      securityMsg.isError
+                        ? 'bg-rose-950/80 border border-rose-800 text-rose-300'
+                        : 'bg-emerald-950/80 border border-emerald-800 text-emerald-300'
+                    }`}
+                  >
+                    {securityMsg.isError ? (
+                      <span className="font-bold">•</span>
+                    ) : (
+                      <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                    )}
+                    <span>{securityMsg.text}</span>
+                  </div>
+                )}
+
+                <form onSubmit={handleChangePassword} className="space-y-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                      Current Master Password
+                    </label>
+                    <input
+                      type="password"
+                      value={currentPasswordInput}
+                      onChange={(e) => setCurrentPasswordInput(e.target.value)}
+                      placeholder="Enter current password..."
+                      required
+                      className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                      New Master Password
+                    </label>
+                    <input
+                      type="password"
+                      value={newPasswordInput}
+                      onChange={(e) => setNewPasswordInput(e.target.value)}
+                      placeholder="Enter new password (min 4 chars)..."
+                      required
+                      className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                      Confirm New Master Password
+                    </label>
+                    <input
+                      type="password"
+                      value={confirmNewPasswordInput}
+                      onChange={(e) => setConfirmNewPasswordInput(e.target.value)}
+                      placeholder="Confirm new password..."
+                      required
+                      className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowAiModal(false);
+                        logoutAdmin();
+                        toast.info('Workspace Locked', 'Session ended.');
+                      }}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 rounded-xl border border-rose-900/40 transition"
+                    >
+                      <Lock className="w-3.5 h-3.5" />
+                      <span>Lock Now</span>
+                    </button>
+
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowAiModal(false)}
+                        className="px-3 py-1.5 text-xs text-slate-400 hover:text-white transition"
+                      >
+                        Close
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={isUpdatingPassword}
+                        className="px-4 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-1.5"
+                      >
+                        {isUpdatingPassword ? (
+                          <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        ) : (
+                          <KeyRound className="w-3.5 h-3.5" />
+                        )}
+                        <span>Update Password</span>
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </>
+            )}
           </div>
         </div>
       )}
