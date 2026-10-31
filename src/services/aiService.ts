@@ -43,6 +43,57 @@ const COMMON_SOFT_SKILLS = [
 ];
 
 /**
+ * Calculates total word count across all text sections in the resume body
+ */
+export function getResumeWordCount(resume?: ResumeData): number {
+  if (!resume) return 0;
+  const parts: string[] = [];
+  if (resume.personal?.summary) parts.push(resume.personal.summary);
+  if (resume.personal?.jobTitle) parts.push(resume.personal.jobTitle);
+  if (resume.experience) {
+    resume.experience.forEach((exp) => {
+      if (exp.jobTitle) parts.push(exp.jobTitle);
+      if (exp.company) parts.push(exp.company);
+      if (exp.highlights) exp.highlights.forEach((h) => parts.push(h));
+    });
+  }
+  if (resume.education) {
+    resume.education.forEach((edu) => {
+      if (edu.degree) parts.push(edu.degree);
+      if (edu.institution) parts.push(edu.institution);
+      if (edu.description) parts.push(edu.description);
+    });
+  }
+  if (resume.skills) {
+    resume.skills.forEach((cat) => {
+      if (cat.skills) parts.push(...cat.skills);
+    });
+  }
+  if (resume.projects) {
+    resume.projects.forEach((proj) => {
+      if (proj.name) parts.push(proj.name);
+      if (proj.description) parts.push(proj.description);
+      if (proj.highlights) proj.highlights.forEach((h) => parts.push(h));
+      if (proj.techStack) proj.techStack.forEach((t) => parts.push(t));
+    });
+  }
+  if (resume.customSections) {
+    resume.customSections.forEach((sec) => {
+      if (sec.items) {
+        sec.items.forEach((item) => {
+          if (item.title) parts.push(item.title);
+          if (item.subtitle) parts.push(item.subtitle);
+          if (item.description) parts.push(item.description);
+        });
+      }
+    });
+  }
+  const text = parts.join(' ').trim();
+  if (!text) return 0;
+  return text.split(/\s+/).filter(Boolean).length;
+}
+
+/**
  * Parses Job Description text to extract keywords and calculate ATS match score
  */
 export function analyzeJobDescription(
@@ -50,13 +101,16 @@ export function analyzeJobDescription(
   jdText: string,
   currentResume?: ResumeData
 ): JobDescriptionData {
-  if (!jdText || jdText.trim().length < 15) {
+  const wordCount = currentResume ? getResumeWordCount(currentResume) : 0;
+  const hasJdText = Boolean(jdText && jdText.trim().length >= 10);
+
+  if (!hasJdText) {
     return {
       targetRoleTitle: jobTitle || 'Target Role',
-      jobDescriptionText: jdText,
+      jobDescriptionText: jdText || '',
       extractedKeywords: [],
       requiredSkills: [],
-      atsScore: 85,
+      atsScore: 0,
       matchFeedback: {
         matchedKeywords: [],
         missingKeywords: [],
@@ -104,32 +158,123 @@ export function analyzeJobDescription(
   // If resume is provided, check matches
   let matchedKeywords: string[] = [];
   let missingKeywords: string[] = [];
-  let atsScore = 75;
 
   if (currentResume) {
     const resumeFullText = JSON.stringify(currentResume).toLowerCase();
     matchedKeywords = uniqueKeywords.filter((kw) => resumeFullText.includes(kw.toLowerCase()));
     missingKeywords = uniqueKeywords.filter((kw) => !resumeFullText.includes(kw.toLowerCase()));
-
-    if (uniqueKeywords.length > 0) {
-      atsScore = Math.min(98, Math.max(45, Math.round((matchedKeywords.length / uniqueKeywords.length) * 100)));
-    }
   } else {
-    matchedKeywords = topRequiredSkills.slice(0, 5);
-    missingKeywords = topRequiredSkills.slice(5);
+    matchedKeywords = [];
+    missingKeywords = topRequiredSkills;
   }
+
+  // Prevent artificial inflation: Return 0% if resume body word count is < 20
+  if (wordCount < 20) {
+    const recommendations: string[] = [
+      `Resume body word count is currently ${wordCount} (minimum 20 words required for ATS evaluation). Complete your work experience and summary.`,
+    ];
+    if (missingKeywords.length > 0) {
+      recommendations.push(
+        `Consider adding: ${missingKeywords.slice(0, 3).join(', ')} once your resume content is expanded.`
+      );
+    }
+    return {
+      targetRoleTitle: jobTitle || 'Target Role',
+      jobDescriptionText: jdText,
+      extractedKeywords: uniqueKeywords,
+      requiredSkills: topRequiredSkills,
+      atsScore: 0,
+      matchFeedback: {
+        matchedKeywords,
+        missingKeywords,
+        recommendations,
+      },
+    };
+  }
+
+  // Weight 1: Keyword match percentage (60%)
+  const keywordScore = uniqueKeywords.length > 0
+    ? (matchedKeywords.length / uniqueKeywords.length) * 60
+    : 0;
+
+  // Weight 2: Target Role presence in headline/summary (20%)
+  const targetRoleLower = (jobTitle || currentResume?.jobTarget?.targetRoleTitle || '').trim().toLowerCase();
+  const headlineLower = (currentResume?.personal?.jobTitle || '').toLowerCase();
+  const summaryLower = (currentResume?.personal?.summary || '').toLowerCase();
+  let roleScore = 0;
+
+  if (targetRoleLower) {
+    if (headlineLower.includes(targetRoleLower) || summaryLower.includes(targetRoleLower)) {
+      roleScore = 20;
+    } else {
+      const tokens = targetRoleLower.split(/\s+/).filter(w => w.length > 2);
+      if (tokens.length > 0) {
+        const matchedTokens = tokens.filter(t => headlineLower.includes(t) || summaryLower.includes(t));
+        roleScore = (matchedTokens.length / tokens.length) * 20;
+      }
+    }
+  }
+
+  // Weight 3: Completion of core sections (Personal, Experience, Skills, Education) (20%)
+  let sectionScore = 0;
+  const missingCoreSections: string[] = [];
+
+  const hasPersonal = Boolean(
+    currentResume?.personal?.fullName?.trim() &&
+    (currentResume?.personal?.email?.trim() || currentResume?.personal?.phone?.trim())
+  );
+  if (hasPersonal) {
+    sectionScore += 5;
+  } else {
+    missingCoreSections.push('Personal Details');
+  }
+
+  const hasExperience = Boolean(
+    currentResume?.experience &&
+    currentResume.experience.length > 0 &&
+    currentResume.experience.some(e => e.jobTitle?.trim() && e.highlights?.some(h => h.trim().length > 0))
+  );
+  if (hasExperience) {
+    sectionScore += 5;
+  } else {
+    missingCoreSections.push('Work Experience');
+  }
+
+  const hasSkills = Boolean(
+    currentResume?.skills &&
+    currentResume.skills.length > 0 &&
+    currentResume.skills.some(cat => cat.skills && cat.skills.length > 0)
+  );
+  if (hasSkills) {
+    sectionScore += 5;
+  } else {
+    missingCoreSections.push('Skills');
+  }
+
+  const hasEducation = Boolean(
+    currentResume?.education &&
+    currentResume.education.length > 0 &&
+    currentResume.education.some(edu => edu.degree?.trim() || edu.institution?.trim())
+  );
+  if (hasEducation) {
+    sectionScore += 5;
+  } else {
+    missingCoreSections.push('Education');
+  }
+
+  const atsScore = Math.min(100, Math.max(0, Math.round(keywordScore + roleScore + sectionScore)));
 
   const recommendations: string[] = [];
   if (missingKeywords.length > 0) {
     recommendations.push(
-      `Consider incorporating target skills like "${missingKeywords.slice(0, 3).join(', ')}" into your experience bullet points or skills section.`
+      `Consider adding: ${missingKeywords.slice(0, 3).join(', ')} into your experience bullet points or skills section.`
     );
   }
-  if (!currentResume?.personal.summary.toLowerCase().includes(jobTitle.toLowerCase())) {
-    recommendations.push(`Tailor your Professional Summary to mention "${jobTitle || 'Target Role'}" explicitly.`);
+  if (roleScore < 20) {
+    recommendations.push(`Tailor your Headline or Professional Summary to mention "${jobTitle || 'Target Role'}" explicitly (+20% ATS weight).`);
   }
-  if (currentResume?.experience.every((e) => e.highlights.length < 3)) {
-    recommendations.push('Aim for 3-5 action-oriented bullet points per work experience role.');
+  if (missingCoreSections.length > 0) {
+    recommendations.push(`Complete core sections (${missingCoreSections.join(', ')}) to satisfy automated parser requirements.`);
   }
 
   return {

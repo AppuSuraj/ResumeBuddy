@@ -17,78 +17,98 @@ interface Props {
   data: ResumeData;
 }
 
-export const TEMPLATE_METADATA: { id: TemplateId; name: string; category: string; description: string }[] = [
+export interface TemplateMeta {
+  id: TemplateId;
+  name: string;
+  category: string;
+  description: string;
+  atsType: 'safe' | 'human-first';
+}
+
+export const TEMPLATE_METADATA: TemplateMeta[] = [
   {
     id: 'modern-minimal',
     name: 'Modern Minimalist',
     category: 'Modern',
     description: 'Clean typography with sleek accent border bar.',
+    atsType: 'safe',
   },
   {
     id: 'tech-developer',
     name: 'Tech & Developer',
     category: 'Tech',
     description: 'Dark mode theme with monospace elements and skill badges.',
+    atsType: 'safe',
   },
   {
     id: 'executive-senior',
     name: 'Executive Senior',
     category: 'Professional',
     description: 'Classic serif layout tailored for leadership & senior roles.',
+    atsType: 'safe',
   },
   {
     id: 'creative-vanguard',
     name: 'Creative Vanguard',
     category: 'Creative',
     description: 'Vibrant gradient banner header with card section styling.',
+    atsType: 'human-first',
   },
   {
     id: 'compact-one-pager',
     name: 'Compact One-Pager',
     category: 'Minimal',
     description: 'Space-optimized high-density design for 1-page fit.',
+    atsType: 'safe',
   },
   {
     id: 'dual-column-modern',
     name: 'Dual Column Sidebar',
     category: 'Modern',
     description: 'Distinct left sidebar for contact details and tech stack.',
+    atsType: 'human-first',
   },
   {
     id: 'elegant-corporate',
     name: 'Elegant Corporate',
     category: 'Professional',
     description: 'Polished slate styling with prominent executive section headers.',
+    atsType: 'safe',
   },
   {
     id: 'minimal-swiss',
     name: 'Minimalist Swiss',
     category: 'Minimal',
     description: 'Bold typographic alignment grid with stark monochrome contrast.',
+    atsType: 'safe',
   },
   {
     id: 'startup-chic',
     name: 'Startup Chic',
     category: 'Modern',
     description: 'Soft rounded container cards with colorful pill tag cloud.',
+    atsType: 'human-first',
   },
   {
     id: 'academic-research',
     name: 'Academic & Research',
     category: 'Academic',
     description: 'Formal publication and research emphasis with clean serif text.',
+    atsType: 'safe',
   },
   {
     id: 'professional-two-tone',
     name: 'Professional Two-Tone',
     category: 'Modern',
     description: 'Dark solid sidebar with a clean white main column for striking contrast.',
+    atsType: 'human-first',
   },
   {
     id: 'modern-sidebar',
     name: 'Modern Sidebar',
     category: 'Modern',
     description: 'Light grey elegant sidebar with excellent typography focus.',
+    atsType: 'human-first',
   },
 ];
 

@@ -126,7 +126,8 @@ export const INITIAL_RESUME_DATA: ResumeData = {
   ],
   jobTarget: {
     targetRoleTitle: 'Senior Full Stack Engineer',
-    jobDescriptionText: '',
+    jobDescriptionText:
+      'We are seeking a Senior Full Stack Engineer to build high-scale cloud web applications. Key technologies: React, TypeScript, Node.js, AWS, System Architecture, CI/CD, GraphQL, Microservices, Docker, PostgreSQL, and Kubernetes.',
     extractedKeywords: ['React', 'TypeScript', 'Node.js', 'AWS', 'System Architecture', 'CI/CD', 'GraphQL', 'Microservices'],
     requiredSkills: ['React', 'TypeScript', 'Node.js', 'PostgreSQL', 'AWS', 'Docker'],
     atsScore: 88,
@@ -188,7 +189,7 @@ export const createBlankResume = (
       jobDescriptionText: jdText || '',
       extractedKeywords: [],
       requiredSkills: [],
-      atsScore: 70,
+      atsScore: 0,
       matchFeedback: {
         matchedKeywords: [],
         missingKeywords: [],

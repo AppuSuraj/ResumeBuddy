@@ -55,7 +55,10 @@ export const TopNavbar: React.FC = () => {
       toast.success('PDF Export Complete', 'Your print-ready resume has been downloaded.');
     } catch (e) {
       console.error('PDF export error:', e);
-      toast.error('PDF Export Failed', 'Ensure the preview is loaded and try again.');
+      toast.info('Opening Print View', 'Use Print > Save as PDF on your device.');
+      setTimeout(() => {
+        window.print();
+      }, 300);
     } finally {
       setIsExportingPdf(false);
     }
@@ -108,7 +111,7 @@ export const TopNavbar: React.FC = () => {
     toast.info('Sample Data Loaded', 'Sample executive resume has been loaded.');
   };
 
-  const atsScore = resumeData.jobTarget.atsScore || 80;
+  const atsScore = resumeData.jobTarget.atsScore ?? 0;
 
   return (
     <>
