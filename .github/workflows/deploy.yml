@@ -32,6 +32,9 @@ jobs:
 
       - name: Build Application
         run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL || 'https://frdnlnecexstqaygpoqj.supabase.co' }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZyZG5sbmVjZXhzdHFheWdwb3FqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTM1NTY3MzIsImV4cCI6MjEwOTEzMjczMn0.GUoe0x5t-dxdAl9UAlYnHaCQRXtMBP_jXwSnbL4X2RY' }}
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v4
