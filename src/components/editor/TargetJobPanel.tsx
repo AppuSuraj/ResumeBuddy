@@ -259,6 +259,15 @@ export const TargetJobPanel: React.FC = () => {
             />
           ) : (
             <div className="space-y-2">
+              {/* Witty ATS Pro-Tip Banner */}
+              <div className="p-2.5 rounded-xl bg-blue-950/40 border border-blue-800/60 text-xs text-blue-200 flex items-start gap-2 shadow-sm">
+                <Sparkles className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+                <p className="text-[11px] leading-relaxed">
+                  <strong className="font-semibold text-blue-300 mr-1">ATS Pro-Tip:</strong>
+                  We don't do star ratings or percentage bars for skills. Workday and Taleo don't care that you're '90% good at React'—they want proof of impact.
+                </p>
+              </div>
+
               {/* Interactive Diff Legend */}
               <div className="flex items-center justify-between text-[10px] px-2 py-1 bg-slate-950/60 rounded-lg border border-slate-800/80 text-slate-400">
                 <span className="flex items-center gap-3">

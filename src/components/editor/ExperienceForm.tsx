@@ -275,6 +275,14 @@ export const ExperienceForm: React.FC = () => {
                         </button>
                       </div>
 
+                      {/* Playful Bullet Bank Helper Text */}
+                      <p className="text-[11px] text-slate-400 leading-relaxed mb-2.5 bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
+                        <span className="text-blue-400 text-xs shrink-0 mt-0.5">💼</span>
+                        <span>
+                          Your personal career vault. Keep 20+ brag points here and toggle only the best ones active. No more juggling 12 different Word docs named &apos;resume_final_v3_really_final.docx&apos;.
+                        </span>
+                      </p>
+
                       {/* Bullets List */}
                       <div className="space-y-2">
                         {bank.map((b, bIdx) => (

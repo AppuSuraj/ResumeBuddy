@@ -35,3 +35,14 @@
     width: 100% !important;
   }
 }
+
+/* Mobile Touch Ergonomics & iOS Auto-Zoom Prevention (< 768px) */
+@media (max-width: 767px) {
+  /* Prevent iOS Safari auto-zoom on focus by enforcing 16px minimum font size */
+  input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="range"]),
+  select,
+  textarea {
+    font-size: 16px !important;
+    min-height: 44px;
+  }
+}

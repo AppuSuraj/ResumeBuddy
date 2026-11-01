@@ -362,8 +362,8 @@ export const TemplateSelector: React.FC = () => {
                         <span>ATS-Safe</span>
                       </span>
                       <div className="pointer-events-none absolute bottom-full right-0 mb-1.5 hidden group-hover/badge:flex flex-col items-end z-30">
-                        <div className="bg-slate-900 border border-slate-700 text-slate-200 text-[10px] rounded-lg px-2.5 py-1.5 shadow-xl whitespace-nowrap">
-                          Optimized for automated parsers (Workday, Greenhouse, Taleo).
+                        <div className="bg-slate-900 border border-slate-700 text-slate-200 text-[10px] rounded-lg px-2.5 py-1.5 shadow-xl max-w-xs leading-relaxed text-left">
+                          Built for the bots. Guaranteed not to break legacy ATS parsers like Workday, Taleo, or Greenhouse.
                         </div>
                         <div className="w-2 h-2 bg-slate-900 border-r border-b border-slate-700 rotate-45 mr-3 -mt-1" />
                       </div>
@@ -375,8 +375,8 @@ export const TemplateSelector: React.FC = () => {
                         <span>Direct Recruiter / Portfolio</span>
                       </span>
                       <div className="pointer-events-none absolute bottom-full right-0 mb-1.5 hidden group-hover/badge:flex flex-col items-end z-30">
-                        <div className="bg-slate-900 border border-slate-700 text-slate-200 text-[10px] rounded-lg px-2.5 py-1.5 shadow-xl whitespace-nowrap">
-                          Best for networking, emails, and direct review where layout presentation matters.
+                        <div className="bg-slate-900 border border-slate-700 text-slate-200 text-[10px] rounded-lg px-2.5 py-1.5 shadow-xl max-w-xs leading-relaxed text-left">
+                          Best for human eyes. Great for networking and direct recruiter emails; risky for automated ATS job portals.
                         </div>
                         <div className="w-2 h-2 bg-slate-900 border-r border-b border-slate-700 rotate-45 mr-3 -mt-1" />
                       </div>

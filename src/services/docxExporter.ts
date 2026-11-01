@@ -444,4 +444,13 @@ export async function exportResumeToDocx(data: ResumeData): Promise<void> {
   const blob = await Packer.toBlob(doc);
   const fileName = `${personal.fullName.replace(/\s+/g, '_') || 'Resume'}_Document.docx`;
   saveAs(blob, fileName);
+
+  // Dispatch download success event to trigger post-download tip modal
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(
+      new CustomEvent('resumebuddy_download_success', {
+        detail: { format: 'docx', fileName },
+      })
+    );
+  }
 }

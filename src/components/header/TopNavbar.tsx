@@ -106,7 +106,10 @@ export const TopNavbar: React.FC = () => {
     try {
       await exportResumeToPdf('resume-preview-container', resumeData.personal.fullName || 'Resume');
       confetti({ particleCount: 35, spread: 60, origin: { y: 0.2 } });
-      toast.success('PDF Export Complete', 'Your print-ready resume has been downloaded.');
+      toast.success(
+        'Vector PDF Generated Successfully!',
+        'Zero paywalls, zero $30/mo traps. Your resume is 100% yours. Go get that interview.'
+      );
     } catch (e) {
       console.error('PDF export error:', e);
       toast.info('Opening Print View', 'Use Print > Save as PDF on your device.');
@@ -124,7 +127,10 @@ export const TopNavbar: React.FC = () => {
     try {
       await exportResumeToDocx(resumeData);
       confetti({ particleCount: 25, spread: 45, origin: { y: 0.2 } });
-      toast.success('Word Document Exported', 'Downloaded as an editable .docx file.');
+      toast.success(
+        'Vector PDF Generated Successfully!',
+        'Zero paywalls, zero $30/mo traps. Your resume is 100% yours. Go get that interview.'
+      );
     } catch (e) {
       console.error('DOCX export error:', e);
       toast.error('DOCX Export Failed', 'Could not generate Word document.');
@@ -366,10 +372,11 @@ export const TopNavbar: React.FC = () => {
                   <button
                     onClick={handleDocxExport}
                     disabled={isExportingDocx}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800 hover:text-white transition"
+                    title="Download Word"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800 hover:text-white transition cursor-pointer"
                   >
                     <FileText className="w-4 h-4 text-blue-400" />
-                    <span>Export Word (.docx)</span>
+                    <span>Download Word (.docx)</span>
                   </button>
 
                   <button

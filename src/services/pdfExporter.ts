@@ -151,6 +151,15 @@ export async function exportResumeToPdf(elementId: string, fileName: string): Pr
     const pdfBlob = pdf.output('blob');
     const safeFileName = `${(fileName || 'Resume').replace(/[\/\\?%*:|"<>]/g, '_')}_Resume.pdf`;
     saveAs(pdfBlob, safeFileName);
+
+    // Dispatch download success event to trigger post-download tip modal
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(
+        new CustomEvent('resumebuddy_download_success', {
+          detail: { format: 'pdf', fileName: safeFileName },
+        })
+      );
+    }
   } finally {
     if (wrapper.parentNode) {
       wrapper.parentNode.removeChild(wrapper);
