@@ -93,13 +93,115 @@ export function getResumeWordCount(resume?: ResumeData): number {
   return text.split(/\s+/).filter(Boolean).length;
 }
 
+// Explicit stopword blacklist fallback ensuring generic English words are never scored as ATS keywords
+export const STOPWORD_BLACKLIST = new Set([
+  'about', 'you', 'your', 'all', 'this', 'our', 'key', 'what', 'we', 'with',
+  'the', 'and', 'for', 'are', 'from', 'can', 'will', 'have', 'has', 'been',
+  'each', 'more', 'other', 'into', 'than', 'them', 'these', 'their', 'there',
+  'they', 'were', 'when', 'which', 'who', 'how', 'why', 'also', 'such', 'some',
+  'well', 'most', 'very', 'only', 'just', 'over', 'both', 'must', 'should',
+  'could', 'would', 'done', 'does', 'doing', 'where', 'work', 'role', 'team',
+  'candidate', 'experience', 'responsibilities', 'qualifications', 'requirements',
+  'summary', 'overview', 'description', 'position', 'apply', 'opportunity',
+  'including', 'looking', 'needed', 'ability', 'preferred', 'minimum', 'plus',
+  'job', 'skills', 'duties', 'ideal', 'level', 'status', 'company'
+]);
+
+export const escapeRegex = (str: string): string =>
+  str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+/**
+ * Builds a strict regex ensuring word boundaries \b for alphanumeric boundaries,
+ * and character boundary checks for symbols like C++, C#, .NET.
+ */
+export const buildStrictWordBoundary = (kw: string): RegExp => {
+  const esc = escapeRegex(kw);
+  const left = /^\w/.test(kw) ? '\\b' : '(?<=^|[\\s.,;:!?()\\[\\]"\'])';
+  const right = /\w$/.test(kw) ? '\\b' : '(?=$|[\\s.,;:!?()\\[\\]"\'])';
+  return new RegExp(`${left}${esc}${right}`, 'i');
+};
+
+/**
+ * Fast offline extractor with stopword filtering and strict word boundaries
+ */
+export function extractJdKeywordsOffline(jdText: string): string[] {
+  if (!jdText || jdText.trim().length < 5) return [];
+
+  // Match known skills with strict word boundaries
+  const allKnownSkills = [...COMMON_TECH_KEYWORDS, ...COMMON_SOFT_SKILLS];
+  const matchedSkills = allKnownSkills.filter((keyword) => {
+    const regex = buildStrictWordBoundary(keyword);
+    return regex.test(jdText);
+  });
+
+  // Extract prominent multi-word capitalized terms (e.g. specialized tools or frameworks)
+  const potentialProperNouns = jdText.match(/\b([A-Z][a-z0-9\.\+#]+(?:\s+[A-Z0-9\.\+#]+){0,2})\b/g) || [];
+  const properNounsFiltered = potentialProperNouns.filter((w) => {
+    const lower = w.toLowerCase().trim();
+    return (
+      w.length >= 2 &&
+      !STOPWORD_BLACKLIST.has(lower) &&
+      !lower.split(/\s+/).some((token) => STOPWORD_BLACKLIST.has(token))
+    );
+  });
+
+  const unique = Array.from(new Set([...matchedSkills, ...properNounsFiltered]))
+    .filter((kw) => !STOPWORD_BLACKLIST.has(kw.toLowerCase().trim()));
+
+  return unique.slice(0, 15);
+}
+
+/**
+ * High-efficiency, low-token JD Keyword Extractor using Gemini 2.5 Flash
+ * Enforces responseMimeType: "application/json" and temperature: 0.1
+ * Falls back to stopword-filtered offline extractor if offline or without API key.
+ */
+export async function extractJdKeywordsWithAi(jdText: string): Promise<string[]> {
+  const truncatedJd = (jdText || '').trim().slice(0, 2000);
+  if (!truncatedJd) return [];
+
+  const apiKey = getStoredApiKey();
+  if (apiKey) {
+    try {
+      const ai = new GoogleGenAI({ apiKey });
+      const prompt = `Extract up to 15 core technical skills, certifications, and industry domain keywords from this job description. Exclude pronouns, common English verbs, and filler words. Output JSON array of strings only.\n\nJob Description:\n${truncatedJd}`;
+
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+          temperature: 0.1,
+        },
+      });
+
+      if (response.text) {
+        const parsed = JSON.parse(response.text.trim());
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const sanitized = parsed
+            .map((s: any) => String(s).trim())
+            .filter((s: string) => s.length >= 2 && !STOPWORD_BLACKLIST.has(s.toLowerCase()));
+          if (sanitized.length > 0) {
+            return sanitized.slice(0, 15);
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Gemini keyword extraction error, using offline stopword fallback:', err);
+    }
+  }
+
+  return extractJdKeywordsOffline(truncatedJd);
+}
+
 /**
  * Parses Job Description text to extract keywords and calculate ATS match score
  */
 export function analyzeJobDescription(
   jobTitle: string,
   jdText: string,
-  currentResume?: ResumeData
+  currentResume?: ResumeData,
+  preExtractedKeywords?: string[]
 ): JobDescriptionData {
   const wordCount = currentResume ? getResumeWordCount(currentResume) : 0;
   const hasJdText = Boolean(jdText && jdText.trim().length >= 10);
@@ -121,48 +223,24 @@ export function analyzeJobDescription(
     };
   }
 
-  const cleanText = jdText.toLowerCase();
+  // Use pre-extracted keywords (from Gemini Flash) or fallback offline extractor
+  const uniqueKeywords = (preExtractedKeywords && preExtractedKeywords.length > 0)
+    ? preExtractedKeywords.filter((kw) => !STOPWORD_BLACKLIST.has(kw.toLowerCase().trim()))
+    : extractJdKeywordsOffline(jdText);
 
-  // Extract exact matches for tech and soft skills
-  const allKnownSkills = [...COMMON_TECH_KEYWORDS, ...COMMON_SOFT_SKILLS];
-  const extractedKeywords = allKnownSkills.filter((keyword) => {
-    // Use regex for exact word boundary match to avoid partial matches
-    const regex = new RegExp(`\\b${keyword.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'i');
-    return regex.test(cleanText);
-  });
-
-  // Junk phrase blacklist to eliminate false skill extractions like "Job Summary We", "Level", "About Us", etc.
-  const JUNK_SKILL_WORDS = new Set([
-    'job summary', 'job summary we', 'level', 'position title', 'we are', 'looking for',
-    'about us', 'full time', 'part time', 'key responsibilities', 'qualifications',
-    'requirements', 'company overview', 'equal opportunity', 'apply now', 'work experience',
-    'job description', 'responsibilities include', 'minimum requirements', 'preferred skills',
-    'service desk engineer', 'senior engineer', 'software engineer', 'project manager',
-    'data analyst', 'frontend developer', 'backend developer', 'full stack developer'
-  ]);
-
-  // Extract prominent multi-word capitalized terms which are often specific proprietary tools/skills
-  const potentialProperNouns = jdText.match(/\b([A-Z][a-z0-9\.\+#]+(?:\s+[A-Z0-9\.\+#]+){0,2})\b/g) || [];
-  const properNounsFiltered = potentialProperNouns.filter(w => 
-    w.length > 2 &&
-    !w.toLowerCase().includes('the ') &&
-    !w.toLowerCase().includes('and ') &&
-    !JUNK_SKILL_WORDS.has(w.toLowerCase().trim())
-  );
-
-  // Deduplicate keywords
-  const uniqueKeywords = Array.from(new Set([...extractedKeywords, ...properNounsFiltered.slice(0, 10)]))
-    .filter(kw => !JUNK_SKILL_WORDS.has(kw.toLowerCase().trim()));
   const topRequiredSkills = uniqueKeywords.slice(0, 15);
 
-  // If resume is provided, check matches
+  // If resume is provided, check matches using strict word boundaries to avoid sub-string false positives
   let matchedKeywords: string[] = [];
   let missingKeywords: string[] = [];
 
   if (currentResume) {
-    const resumeFullText = JSON.stringify(currentResume).toLowerCase();
-    matchedKeywords = uniqueKeywords.filter((kw) => resumeFullText.includes(kw.toLowerCase()));
-    missingKeywords = uniqueKeywords.filter((kw) => !resumeFullText.includes(kw.toLowerCase()));
+    const resumeFullText = JSON.stringify(currentResume);
+    matchedKeywords = uniqueKeywords.filter((kw) => {
+      const boundaryRegex = buildStrictWordBoundary(kw);
+      return boundaryRegex.test(resumeFullText);
+    });
+    missingKeywords = uniqueKeywords.filter((kw) => !matchedKeywords.includes(kw));
   } else {
     matchedKeywords = [];
     missingKeywords = topRequiredSkills;

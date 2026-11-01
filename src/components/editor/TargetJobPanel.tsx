@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useResume } from '../../context/ResumeContext';
 import { useToast } from '../common/Toast';
-import { analyzeJobDescription } from '../../services/aiService';
-import { ResumeData } from '../../types/resume';
+import { analyzeJobDescription, extractJdKeywordsWithAi, escapeRegex } from '../../services/aiService';
+import { ResumeData, SkillCategory } from '../../types/resume';
 import { Target, Sparkles, CheckCircle2, AlertCircle, Plus, RefreshCw, PlusCircle, Check, Eye, Edit3, Highlighter } from 'lucide-react';
 
 export const TargetJobPanel: React.FC = () => {
@@ -31,20 +31,34 @@ export const TargetJobPanel: React.FC = () => {
     personal.jobTitle === 'Professional' ||
     personal.jobTitle === jobTarget.targetRoleTitle;
 
-  const handleUpdate = (e: React.FormEvent) => {
+  const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsAnalyzing(true);
-    setTimeout(() => {
-      updateJobTarget(roleTitle, jdText);
+    try {
+      const extractedKeywords = await extractJdKeywordsWithAi(jdText);
+      const analyzed = analyzeJobDescription(roleTitle, jdText, resumeData, extractedKeywords);
+      setResumeData((prev) => ({
+        ...prev,
+        jobTarget: analyzed,
+      }));
 
       // Intelligent Defaulting: automatically sync headline if it's default/placeholder
       if (isDefaultHeadline && roleTitle.trim()) {
         updatePersonal({ jobTitle: roleTitle.trim() });
       }
 
-      setIsAnalyzing(false);
+      toast.success(
+        'Job Analysis Complete',
+        extractedKeywords.length > 0
+          ? `Extracted ${extractedKeywords.length} core technical keywords.`
+          : 'ATS score and keyword matches recalculated.'
+      );
+    } catch {
+      updateJobTarget(roleTitle, jdText);
       toast.success('Job Analysis Updated', 'ATS score and keyword matches recalculated.');
-    }, 200);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleSyncToResumeTitle = () => {
@@ -54,63 +68,98 @@ export const TargetJobPanel: React.FC = () => {
   };
 
   const handleAddMissingKeywordToSkills = (keyword: string) => {
+    const cleanKw = keyword.trim();
+    if (!cleanKw) return;
+
+    let updatedSkills: SkillCategory[];
+    let targetCatName = 'Technical Skills';
+
     if (resumeData.skills.length > 0) {
       const firstCat = resumeData.skills[0];
-      if (!firstCat.skills.some((s) => s.toLowerCase() === keyword.toLowerCase())) {
-        const newSkills = [...firstCat.skills, keyword];
-        updateSkillCategory(firstCat.id, {
-          skills: newSkills,
-        });
-
-        // Recalculate match immediately with updated skills
-        const updatedResume: ResumeData = {
-          ...resumeData,
-          skills: resumeData.skills.map((s, idx) => (idx === 0 ? { ...s, skills: newSkills } : s)),
-        };
-        const analyzed = analyzeJobDescription(roleTitle, jdText, updatedResume);
-        setResumeData((prev) => ({ ...prev, jobTarget: analyzed }));
-
-        toast.success('Keyword Added', `"${keyword}" added to ${firstCat.categoryName}.`);
-      } else {
-        toast.info('Already in Skills', `"${keyword}" is already in your skills.`);
+      targetCatName = firstCat.categoryName;
+      if (firstCat.skills.some((s) => s.toLowerCase() === cleanKw.toLowerCase())) {
+        toast.info('Already in Skills', `"${cleanKw}" is already listed.`);
+        return;
       }
+      const newSkills = [...firstCat.skills, cleanKw];
+      updatedSkills = resumeData.skills.map((s, idx) =>
+        idx === 0 ? { ...s, skills: newSkills } : s
+      );
     } else {
-      addSkillCategory();
-      toast.info('Category Created', 'Created a Technical Skills category.');
+      updatedSkills = [
+        {
+          id: `skill-${Date.now()}`,
+          categoryName: 'Technical Skills',
+          skills: [cleanKw],
+        },
+      ];
     }
+
+    // Immediately recalculate ATS match with the new skill
+    const updatedResume: ResumeData = {
+      ...resumeData,
+      skills: updatedSkills,
+    };
+    const analyzed = analyzeJobDescription(
+      roleTitle,
+      jdText,
+      updatedResume,
+      resumeData.jobTarget.extractedKeywords
+    );
+
+    setResumeData({
+      ...updatedResume,
+      jobTarget: analyzed,
+    });
+
+    toast.success('Skill Added', `"${cleanKw}" added to ${targetCatName}.`);
   };
 
   const handleAddAllMissingKeywords = () => {
     const missing = jobTarget.matchFeedback?.missingKeywords || [];
     if (missing.length === 0) return;
 
+    let updatedSkills: SkillCategory[];
+
     if (resumeData.skills.length > 0) {
       const firstCat = resumeData.skills[0];
       const existing = new Set(firstCat.skills.map((s) => s.toLowerCase()));
       const toAdd = missing.filter((m) => !existing.has(m.toLowerCase()));
-      
-      if (toAdd.length > 0) {
-        const newSkills = [...firstCat.skills, ...toAdd];
-        updateSkillCategory(firstCat.id, {
-          skills: newSkills,
-        });
-
-        // Recalculate match immediately with updated skills
-        const updatedResume: ResumeData = {
-          ...resumeData,
-          skills: resumeData.skills.map((s, idx) => (idx === 0 ? { ...s, skills: newSkills } : s)),
-        };
-        const analyzed = analyzeJobDescription(roleTitle, jdText, updatedResume);
-        setResumeData((prev) => ({ ...prev, jobTarget: analyzed }));
-
-        toast.success('Keywords Added', `Added ${toAdd.length} missing keywords to skills!`);
-      } else {
+      if (toAdd.length === 0) {
         toast.info('All Keywords Present', 'All missing keywords are already in your skills.');
+        return;
       }
+      const newSkills = [...firstCat.skills, ...toAdd];
+      updatedSkills = resumeData.skills.map((s, idx) =>
+        idx === 0 ? { ...s, skills: newSkills } : s
+      );
     } else {
-      addSkillCategory();
-      toast.info('Category Created', 'Please click again to add keywords to the new category.');
+      updatedSkills = [
+        {
+          id: `skill-${Date.now()}`,
+          categoryName: 'Technical Skills',
+          skills: [...missing],
+        },
+      ];
     }
+
+    const updatedResume: ResumeData = {
+      ...resumeData,
+      skills: updatedSkills,
+    };
+    const analyzed = analyzeJobDescription(
+      roleTitle,
+      jdText,
+      updatedResume,
+      resumeData.jobTarget.extractedKeywords
+    );
+
+    setResumeData({
+      ...updatedResume,
+      jobTarget: analyzed,
+    });
+
+    toast.success('Skills Added', `Added ${missing.length} missing keywords to skills!`);
   };
 
   const atsScore = jobTarget.atsScore ?? 0;
@@ -233,15 +282,24 @@ export const TargetJobPanel: React.FC = () => {
                       ...matchedKeywords.map((k) => ({ text: k, isMatched: true })),
                       ...missingKeywords.map((k) => ({ text: k, isMatched: false })),
                     ]
-                      .filter((k) => k.text && k.text.length > 1)
+                      .filter((k) => k.text && k.text.length >= 2)
                       .sort((a, b) => b.text.length - a.text.length);
 
                     if (allKws.length === 0) {
                       return <span className="whitespace-pre-wrap">{jdText}</span>;
                     }
 
+                    // Strict word boundary helper ensuring short keywords like "AI"
+                    // never slice into words like "obtain" or "campaign"
+                    const buildStrictRegexPattern = (kw: string) => {
+                      const esc = escapeRegex(kw);
+                      const left = /^\w/.test(kw) ? '\\b' : '(?<=^|[\\s.,;:!?()\\[\\]"\'])';
+                      const right = /\w$/.test(kw) ? '\\b' : '(?=$|[\\s.,;:!?()\\[\\]"\'])';
+                      return `${left}${esc}${right}`;
+                    };
+
                     const pattern = new RegExp(
-                      `(${allKws.map((k) => k.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`,
+                      `(${allKws.map((k) => buildStrictRegexPattern(k.text)).join('|')})`,
                       'gi'
                     );
 
@@ -250,7 +308,7 @@ export const TargetJobPanel: React.FC = () => {
                     return (
                       <span className="whitespace-pre-wrap">
                         {parts.map((part, i) => {
-                          const lower = part.toLowerCase();
+                          const lower = part.trim().toLowerCase();
                           const foundMatched = matchedKeywords.find((k) => k.toLowerCase() === lower);
                           const foundMissing = missingKeywords.find((k) => k.toLowerCase() === lower);
 
@@ -258,7 +316,7 @@ export const TargetJobPanel: React.FC = () => {
                             return (
                               <mark
                                 key={i}
-                                className="bg-emerald-950/80 text-emerald-300 border border-emerald-600/60 rounded px-1 py-0.2 mx-0.5 font-bold inline-block"
+                                className="bg-emerald-950/90 text-emerald-300 border border-emerald-600/70 rounded px-1.5 py-0.5 mx-0.5 font-bold inline-block shadow-sm"
                                 title={`✓ Covered in resume: ${foundMatched}`}
                               >
                                 {part}
@@ -272,11 +330,13 @@ export const TargetJobPanel: React.FC = () => {
                                 key={i}
                                 type="button"
                                 onClick={() => handleAddMissingKeywordToSkills(foundMissing)}
-                                className="bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-600/60 rounded px-1 py-0.2 mx-0.5 font-bold transition inline-flex items-center gap-0.5 active:scale-95 text-left"
-                                title={`⚠️ Missing: Click to add "${foundMissing}" to your Skills!`}
+                                className="bg-rose-950/90 hover:bg-rose-900 text-rose-200 hover:text-white border border-rose-600/70 hover:border-rose-400 rounded px-1.5 py-0.5 mx-0.5 font-bold transition inline-flex items-center gap-1 active:scale-95 text-left cursor-pointer group shadow-sm"
+                                title={`⚠️ Missing from resume: Click to add "${foundMissing}" to Skills`}
                               >
                                 <span>{part}</span>
-                                <span className="text-[9px] text-rose-400 font-normal">+add</span>
+                                <span className="text-[10px] text-rose-300 group-hover:text-white bg-rose-900/80 px-1 rounded font-normal font-sans">
+                                  +add
+                                </span>
                               </button>
                             );
                           }
