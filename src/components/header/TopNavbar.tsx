@@ -19,7 +19,8 @@ import {
   Share2,
   Lock,
   Shield,
-  KeyRound
+  KeyRound,
+  Printer
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ResumeManagerModal } from './ResumeManagerModal';
@@ -318,6 +319,18 @@ export const TopNavbar: React.FC = () => {
                   >
                     <FileText className="w-4 h-4 text-blue-400" />
                     <span>Export Word (.docx)</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowExportMenu(false);
+                      toast.info('Opening Vector Print', 'In print dialog, choose Save as PDF for vector text.');
+                      setTimeout(() => window.print(), 300);
+                    }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800 hover:text-white transition"
+                  >
+                    <Printer className="w-4 h-4 text-purple-400" />
+                    <span>Print / Native Vector PDF</span>
                   </button>
 
                   <button

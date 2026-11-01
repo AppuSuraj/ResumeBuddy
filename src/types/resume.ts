@@ -11,6 +11,12 @@ export interface PersonalDetails {
   summary: string;
 }
 
+export interface BulletBankItem {
+  id: string;
+  text: string;
+  enabled: boolean;
+}
+
 export interface WorkExperience {
   id: string;
   jobTitle: string;
@@ -20,6 +26,7 @@ export interface WorkExperience {
   endDate: string;
   isCurrent: boolean;
   highlights: string[];
+  bulletBank?: BulletBankItem[];
 }
 
 export interface Education {
@@ -121,6 +128,8 @@ export interface StyleConfig {
 export interface ResumeData {
   id: string;
   title: string;
+  targetRoleBranch?: string; // e.g. "Frontend Lead", "Full-Stack Architect", "Engineering Manager"
+  versionNotes?: string;
   updatedAt: number;
   personal: PersonalDetails;
   experience: WorkExperience[];

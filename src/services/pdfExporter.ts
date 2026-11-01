@@ -78,6 +78,76 @@ export async function exportResumeToPdf(elementId: string, fileName: string): Pr
       heightLeft -= pageHeight;
     }
 
+    // Embed searchable/selectable text stream for ATS parsers & user text selection
+    try {
+      const cloneRect = clone.getBoundingClientRect();
+      const scaleFactorX = imgWidth / (cloneRect.width || 794);
+      const scaleFactorY = imgHeight / (cloneRect.height || 1123);
+
+      // 1. Clickable Hyperlinks (Emails, LinkedIn, GitHub, Portfolio)
+      const linkElements = clone.querySelectorAll('a, [data-link]');
+      linkElements.forEach((el) => {
+        const href = el.getAttribute('href') || el.getAttribute('data-link');
+        if (href && (href.startsWith('http') || href.startsWith('mailto:') || href.startsWith('tel:'))) {
+          const rect = el.getBoundingClientRect();
+          const relX = (rect.left - cloneRect.left) * scaleFactorX;
+          const relY = (rect.top - cloneRect.top) * scaleFactorY;
+          const relW = rect.width * scaleFactorX;
+          const relH = rect.height * scaleFactorY;
+
+          const pageIndex = Math.floor(relY / pageHeight);
+          const pageY = relY % pageHeight;
+
+          if (pageIndex < pdf.getNumberOfPages() && relW > 0 && relH > 0) {
+            pdf.setPage(pageIndex + 1);
+            pdf.link(relX, pageY, relW, relH, { url: href });
+          }
+        }
+      });
+
+      // 2. Invisible vector text stream (PDF Text Rendering Mode 3) for ATS compliance & Ctrl+C text selection
+      const walker = document.createTreeWalker(clone, NodeFilter.SHOW_TEXT, null);
+      let textNode: Node | null;
+      while ((textNode = walker.nextNode())) {
+        const rawText = textNode.textContent?.trim();
+        if (rawText && rawText.length > 0 && textNode.parentElement) {
+          const parent = textNode.parentElement;
+          const rect = parent.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            const relX = (rect.left - cloneRect.left) * scaleFactorX;
+            const relY = (rect.top - cloneRect.top) * scaleFactorY;
+            const pageIndex = Math.floor(relY / pageHeight);
+            const pageY = relY % pageHeight;
+
+            if (pageIndex < pdf.getNumberOfPages()) {
+              const computed = window.getComputedStyle(parent);
+              const fontSizePx = parseFloat(computed.fontSize) || 11;
+              const fontSizePt = Math.max(7, Math.min(18, (fontSizePx * 72) / 96));
+
+              pdf.setPage(pageIndex + 1);
+              pdf.setFontSize(fontSizePt);
+              try {
+                // PDF Text Rendering Mode 3: Neither fill nor stroke (invisible)
+                // ATS parsers extract all text objects cleanly; users can select & copy text
+                (pdf as any).internal.write('/Tr 3 Tr');
+                pdf.text(rawText, relX, pageY + (fontSizePt * 0.3527 * 0.8), { renderingMode: 'invisible' } as any);
+                (pdf as any).internal.write('/Tr 0 Tr');
+              } catch {
+                try {
+                  pdf.setTextColor(255, 255, 255);
+                  pdf.text(rawText, relX, pageY + (fontSizePt * 0.3527 * 0.8));
+                } catch {
+                  // Ignore minor single-glyph errors
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (textStreamErr) {
+      console.warn('Non-fatal: could not inject invisible text layer:', textStreamErr);
+    }
+
     const pdfBlob = pdf.output('blob');
     const safeFileName = `${(fileName || 'Resume').replace(/[\/\\?%*:|"<>]/g, '_')}_Resume.pdf`;
     saveAs(pdfBlob, safeFileName);

@@ -32,6 +32,7 @@ interface ResumeContextType {
   switchResume: (id: string) => void;
   deleteResume: (id: string) => void;
   duplicateResume: (id: string) => void;
+  branchResume: (sourceId: string, branchRoleTitle: string, customTitle?: string) => string;
   renameResume: (id: string, newTitle: string) => void;
 
   activeTab: string;
@@ -45,6 +46,9 @@ interface ResumeContextType {
   addExperienceItem: () => void;
   deleteExperienceItem: (id: string) => void;
   reorderExperience: (startIndex: number, endIndex: number) => void;
+  toggleBulletBankItem: (expId: string, bulletId: string) => void;
+  addBulletToBank: (expId: string, text: string) => void;
+  deleteBulletFromBank: (expId: string, bulletId: string) => void;
   
   updateEducationItem: (id: string, edu: Partial<Education>) => void;
   addEducationItem: () => void;
@@ -277,6 +281,28 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   };
 
+  const branchResume = (sourceId: string, branchRoleTitle: string, customTitle?: string): string => {
+    const toCopy = resumes.find(r => r.id === sourceId) || resumeData;
+    const newId = `res-${Date.now()}`;
+    const cleanRole = branchRoleTitle.trim();
+    const title = customTitle?.trim() || (cleanRole ? `${cleanRole} Resume` : `${toCopy.title} (Branched)`);
+    
+    // Deep clone source resume to isolate edits while keeping all bullet bank entries
+    const branched: ResumeData = JSON.parse(JSON.stringify(toCopy));
+    branched.id = newId;
+    branched.title = title;
+    branched.targetRoleBranch = cleanRole || undefined;
+    branched.updatedAt = Date.now();
+    if (cleanRole) {
+      branched.jobTarget.targetRoleTitle = cleanRole;
+    }
+
+    setResumes(prev => [...prev, branched]);
+    setCurrentResumeId(newId);
+    setResumeData(branched);
+    return newId;
+  };
+
   const renameResume = (id: string, newTitle: string) => {
     if (id === currentResumeId) {
       setResumeData(prev => ({ ...prev, title: newTitle }));
@@ -305,11 +331,96 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   const updateExperienceItem = (id: string, exp: Partial<WorkExperience>) => {
     setResumeData((prev) => ({
       ...prev,
-      experience: prev.experience.map((item) => (item.id === id ? { ...item, ...exp } : item)),
+      experience: prev.experience.map((item) => {
+        if (item.id !== id) return item;
+        const merged = { ...item, ...exp };
+
+        // Keep bulletBank and highlights in sync
+        if (exp.highlights && !exp.bulletBank) {
+          const bank = item.bulletBank || [];
+          const disabledItems = bank.filter(b => !b.enabled);
+          const newEnabledItems = exp.highlights.map((h, i) => {
+            const found = bank.find(b => b.text === h);
+            return found || { id: `b-${i}-${Date.now()}`, text: h, enabled: true };
+          });
+          merged.bulletBank = [...newEnabledItems, ...disabledItems];
+        } else if (exp.bulletBank && !exp.highlights) {
+          merged.highlights = exp.bulletBank.filter(b => b.enabled).map(b => b.text);
+        }
+
+        return merged;
+      }),
+    }));
+  };
+
+  const toggleBulletBankItem = (expId: string, bulletId: string) => {
+    setResumeData((prev) => ({
+      ...prev,
+      experience: prev.experience.map((item) => {
+        if (item.id !== expId) return item;
+        const bank = item.bulletBank && item.bulletBank.length > 0 
+          ? item.bulletBank 
+          : item.highlights.map((h, i) => ({ id: `b-${i}`, text: h, enabled: true }));
+        
+        const updatedBank = bank.map((b) => b.id === bulletId ? { ...b, enabled: !b.enabled } : b);
+        const updatedHighlights = updatedBank.filter(b => b.enabled).map(b => b.text);
+
+        return {
+          ...item,
+          bulletBank: updatedBank,
+          highlights: updatedHighlights,
+        };
+      }),
+    }));
+  };
+
+  const addBulletToBank = (expId: string, text: string) => {
+    if (!text.trim()) return;
+    setResumeData((prev) => ({
+      ...prev,
+      experience: prev.experience.map((item) => {
+        if (item.id !== expId) return item;
+        const bank = item.bulletBank && item.bulletBank.length > 0 
+          ? item.bulletBank 
+          : item.highlights.map((h, i) => ({ id: `b-${i}`, text: h, enabled: true }));
+        
+        const newBullet = { 
+          id: `b-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`, 
+          text: text.trim(), 
+          enabled: true 
+        };
+        const updatedBank = [...bank, newBullet];
+        const updatedHighlights = updatedBank.filter(b => b.enabled).map(b => b.text);
+
+        return {
+          ...item,
+          bulletBank: updatedBank,
+          highlights: updatedHighlights,
+        };
+      }),
+    }));
+  };
+
+  const deleteBulletFromBank = (expId: string, bulletId: string) => {
+    setResumeData((prev) => ({
+      ...prev,
+      experience: prev.experience.map((item) => {
+        if (item.id !== expId) return item;
+        const bank = item.bulletBank || [];
+        const updatedBank = bank.filter(b => b.id !== bulletId);
+        const updatedHighlights = updatedBank.filter(b => b.enabled).map(b => b.text);
+
+        return {
+          ...item,
+          bulletBank: updatedBank,
+          highlights: updatedHighlights,
+        };
+      }),
     }));
   };
 
   const addExperienceItem = () => {
+    const defaultText = 'Key achievement or responsibility with metrics.';
     const newItem: WorkExperience = {
       id: `exp-${Date.now()}`,
       jobTitle: '',
@@ -318,7 +429,10 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       startDate: '',
       endDate: 'Present',
       isCurrent: true,
-      highlights: ['Key achievement or responsibility with metrics.'],
+      highlights: [defaultText],
+      bulletBank: [
+        { id: `b-${Date.now()}`, text: defaultText, enabled: true }
+      ],
     };
     setResumeData((prev) => ({
       ...prev,
@@ -522,6 +636,7 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         switchResume,
         deleteResume,
         duplicateResume,
+        branchResume,
         renameResume,
         activeTab,
         setActiveTab,
@@ -532,6 +647,9 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         addExperienceItem,
         deleteExperienceItem,
         reorderExperience,
+        toggleBulletBankItem,
+        addBulletToBank,
+        deleteBulletFromBank,
         updateEducationItem,
         addEducationItem,
         deleteEducationItem,

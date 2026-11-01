@@ -3,10 +3,19 @@ import { useResume } from '../../context/ResumeContext';
 import { useToast } from '../common/Toast';
 import { generateAiBullets } from '../../services/aiService';
 import { WorkExperience } from '../../types/resume';
-import { Briefcase, Plus, Trash2, ChevronUp, ChevronDown, Sparkles, Wand2, X, Check } from 'lucide-react';
+import { Briefcase, Plus, Trash2, ChevronUp, ChevronDown, Sparkles, Wand2, X, Check, Archive, Layers } from 'lucide-react';
 
 export const ExperienceForm: React.FC = () => {
-  const { resumeData, updateExperienceItem, addExperienceItem, deleteExperienceItem, reorderExperience } = useResume();
+  const { 
+    resumeData, 
+    updateExperienceItem, 
+    addExperienceItem, 
+    deleteExperienceItem, 
+    reorderExperience,
+    toggleBulletBankItem,
+    addBulletToBank,
+    deleteBulletFromBank
+  } = useResume();
   const { experience, jobTarget } = resumeData;
   const toast = useToast();
 
@@ -51,16 +60,25 @@ export const ExperienceForm: React.FC = () => {
     const exp = experience.find((e) => e.id === expId);
     if (exp && selectedBullets.length > 0) {
       if (activeBulletIndex !== null) {
-        const updated = [...exp.highlights];
-        updated[activeBulletIndex] = selectedBullets[0];
-        updated.splice(activeBulletIndex + 1, 0, ...selectedBullets.slice(1));
-        updateExperienceItem(expId, { highlights: updated });
+        const bank = (exp.bulletBank && exp.bulletBank.length > 0)
+          ? [...exp.bulletBank]
+          : exp.highlights.map((h, i) => ({ id: `b-${i}`, text: h, enabled: true }));
+
+        if (activeBulletIndex < bank.length) {
+          bank[activeBulletIndex] = { ...bank[activeBulletIndex], text: selectedBullets[0] };
+        }
+        if (selectedBullets.length > 1) {
+          selectedBullets.slice(1).forEach((b) => {
+            bank.push({ id: `b-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`, text: b, enabled: true });
+          });
+        }
+        updateExperienceItem(expId, { bulletBank: bank });
         toast.success('Bullet Enhanced', 'Updated achievement with AI-crafted metric bullet.');
       } else {
-        updateExperienceItem(expId, {
-          highlights: [...exp.highlights, ...selectedBullets],
+        selectedBullets.forEach((bullet) => {
+          addBulletToBank(expId, bullet);
         });
-        toast.success('Bullets Added', `Added ${selectedBullets.length} AI achievement bullets.`);
+        toast.success('Bullets Added to Bank', `Added ${selectedBullets.length} AI achievement bullets.`);
       }
     }
     setActiveAiExpId(null);
@@ -227,69 +245,113 @@ export const ExperienceForm: React.FC = () => {
                 </label>
               </div>
 
-              {/* Highlights / Responsibilities section */}
+              {/* Master Bullet Bank & Achievements Section */}
               <div className="pt-2">
-                <div className="flex justify-between items-center mb-2">
-                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                    Achievements & Responsibilities
-                  </label>
-                  <button
-                    onClick={() => openAiBulletsModal(exp)}
-                    className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-blue-300 bg-blue-950/70 hover:bg-blue-900 border border-blue-800/80 rounded-lg transition"
-                  >
-                    <Wand2 className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
-                    AI Generate Bullets
-                  </button>
-                </div>
+                {(() => {
+                  const bank = (exp.bulletBank && exp.bulletBank.length > 0)
+                    ? exp.bulletBank
+                    : exp.highlights.map((h, i) => ({ id: `b-${i}`, text: h, enabled: true }));
+                  const activeCount = bank.filter((b) => b.enabled).length;
+                  const bankedCount = bank.length - activeCount;
 
-                {/* Bullets List */}
-                <div className="space-y-2">
-                  {exp.highlights.map((hl, hIdx) => (
-                    <div key={hIdx} className="flex gap-2 items-start group">
-                      <span className="text-blue-400 font-bold text-xs mt-2">•</span>
-                      <textarea
-                        rows={2}
-                        value={hl}
-                        onChange={(e) => {
-                          const updated = [...exp.highlights];
-                          updated[hIdx] = e.target.value;
-                          updateExperienceItem(exp.id, { highlights: updated });
-                        }}
-                        className="flex-1 bg-slate-800/80 border border-slate-700/80 rounded-xl p-2.5 text-xs text-white leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
-                      />
-                      <div className="flex flex-col gap-1 mt-1">
+                  return (
+                    <>
+                      <div className="flex justify-between items-center mb-2">
+                        <div className="flex items-center gap-2">
+                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                            Achievements & Bullet Bank
+                          </label>
+                          <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700/60">
+                            {activeCount} Active • {bankedCount} Banked
+                          </span>
+                        </div>
                         <button
-                          onClick={() => openAiBulletsModal(exp, hl, hIdx)}
-                          title="AI Polish this bullet"
-                          className="p-1.5 text-blue-400 hover:text-blue-200 hover:bg-blue-900/40 rounded-lg transition opacity-60 group-hover:opacity-100"
+                          type="button"
+                          onClick={() => openAiBulletsModal(exp)}
+                          className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-blue-300 bg-blue-950/70 hover:bg-blue-900 border border-blue-800/80 rounded-lg transition"
                         >
-                          <Sparkles className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            const updated = exp.highlights.filter((_, i) => i !== hIdx);
-                            updateExperienceItem(exp.id, { highlights: updated });
-                          }}
-                          className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition opacity-60 group-hover:opacity-100"
-                          title="Delete Bullet"
-                        >
-                          <X className="w-3.5 h-3.5" />
+                          <Wand2 className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
+                          AI Generate Bullets
                         </button>
                       </div>
-                    </div>
-                  ))}
 
-                  <button
-                    onClick={() => {
-                      updateExperienceItem(exp.id, {
-                        highlights: [...exp.highlights, ''],
-                      });
-                    }}
-                    className="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1 pt-1 transition"
-                  >
-                    <Plus className="w-3.5 h-3.5" /> Add Bullet Point
-                  </button>
-                </div>
+                      {/* Bullets List */}
+                      <div className="space-y-2">
+                        {bank.map((b, bIdx) => (
+                          <div key={b.id || bIdx} className="flex gap-2 items-start group">
+                            {/* Active vs Banked Toggle Switch */}
+                            <button
+                              type="button"
+                              onClick={() => toggleBulletBankItem(exp.id, b.id)}
+                              className={`mt-1 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg border transition shrink-0 select-none ${
+                                b.enabled
+                                  ? 'bg-emerald-950/70 text-emerald-300 border-emerald-800/80 hover:bg-emerald-900/80'
+                                  : 'bg-slate-800/70 text-slate-400 border-slate-700/80 hover:text-slate-200 hover:bg-slate-700/80'
+                              }`}
+                              title={b.enabled ? 'Active on resume (click to bank for other applications)' : 'Banked (click to activate on resume)'}
+                            >
+                              {b.enabled ? (
+                                <>
+                                  <Check className="w-3 h-3 text-emerald-400" />
+                                  <span>Active</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Archive className="w-3 h-3 text-amber-400" />
+                                  <span>Banked</span>
+                                </>
+                              )}
+                            </button>
+
+                            <textarea
+                              rows={2}
+                              value={b.text}
+                              onChange={(e) => {
+                                const updatedBank = bank.map((item) =>
+                                  item.id === b.id ? { ...item, text: e.target.value } : item
+                                );
+                                updateExperienceItem(exp.id, { bulletBank: updatedBank });
+                              }}
+                              placeholder="Describe an accomplishment with quantified metrics and impact..."
+                              className={`flex-1 rounded-xl p-2.5 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition ${
+                                b.enabled
+                                  ? 'bg-slate-800/80 border border-slate-700/80 text-white'
+                                  : 'bg-slate-900/60 border border-slate-800/60 text-slate-400 italic line-through opacity-70'
+                              }`}
+                            />
+
+                            <div className="flex flex-col gap-1 mt-1">
+                              <button
+                                type="button"
+                                onClick={() => openAiBulletsModal(exp, b.text, bIdx)}
+                                title="AI Polish this bullet"
+                                className="p-1.5 text-blue-400 hover:text-blue-200 hover:bg-blue-900/40 rounded-lg transition opacity-60 group-hover:opacity-100"
+                              >
+                                <Sparkles className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => deleteBulletFromBank(exp.id, b.id)}
+                                className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition opacity-60 group-hover:opacity-100"
+                                title="Delete from Bullet Bank"
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+
+                        <button
+                          type="button"
+                          onClick={() => addBulletToBank(exp.id, 'Spearheaded project initiatives and delivered measurable business results.')}
+                          className="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1 pt-1 transition"
+                        >
+                          <Plus className="w-3.5 h-3.5" /> Add Bullet to Bank
+                        </button>
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
           ))}

@@ -3,7 +3,7 @@ import { useResume } from '../../context/ResumeContext';
 import { useToast } from '../common/Toast';
 import { analyzeJobDescription } from '../../services/aiService';
 import { ResumeData } from '../../types/resume';
-import { Target, Sparkles, CheckCircle2, AlertCircle, Plus, RefreshCw, PlusCircle, Check } from 'lucide-react';
+import { Target, Sparkles, CheckCircle2, AlertCircle, Plus, RefreshCw, PlusCircle, Check, Eye, Edit3, Highlighter } from 'lucide-react';
 
 export const TargetJobPanel: React.FC = () => {
   const { resumeData, setResumeData, updateJobTarget, updatePersonal, updateSkillCategory, addSkillCategory } = useResume();
@@ -13,6 +13,7 @@ export const TargetJobPanel: React.FC = () => {
   const [roleTitle, setRoleTitle] = useState(jobTarget.targetRoleTitle || '');
   const [jdText, setJdText] = useState(jobTarget.jobDescriptionText || '');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [jdViewMode, setJdViewMode] = useState<'editor' | 'diff'>('diff');
 
   // Sync local inputs when target data updates externally
   useEffect(() => {
@@ -165,16 +166,132 @@ export const TargetJobPanel: React.FC = () => {
         </div>
 
         <div>
-          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">
-            Job Description (JD) Text
-          </label>
-          <textarea
-            rows={4}
-            value={jdText}
-            onChange={(e) => setJdText(e.target.value)}
-            placeholder="Paste job posting requirements & responsibilities..."
-            className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl p-3 text-xs text-slate-200 placeholder-slate-500 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 leading-relaxed"
-          />
+          <div className="flex items-center justify-between mb-1.5">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+              Job Description (JD) & Keyword Diff
+            </label>
+            <div className="flex items-center gap-1 bg-slate-800 p-0.5 rounded-lg border border-slate-700/80">
+              <button
+                type="button"
+                onClick={() => setJdViewMode('diff')}
+                className={`flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md transition ${
+                  jdViewMode === 'diff'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="View interactive keyword highlighting & gap diff"
+              >
+                <Highlighter className="w-3 h-3" />
+                <span>Visual Diff</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setJdViewMode('editor')}
+                className={`flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md transition ${
+                  jdViewMode === 'editor'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+                title="Edit raw job description text"
+              >
+                <Edit3 className="w-3 h-3" />
+                <span>Edit Raw Text</span>
+              </button>
+            </div>
+          </div>
+
+          {jdViewMode === 'editor' ? (
+            <textarea
+              rows={5}
+              value={jdText}
+              onChange={(e) => setJdText(e.target.value)}
+              placeholder="Paste job posting requirements & responsibilities..."
+              className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl p-3 text-xs text-slate-200 placeholder-slate-500 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 leading-relaxed"
+            />
+          ) : (
+            <div className="space-y-2">
+              {/* Interactive Diff Legend */}
+              <div className="flex items-center justify-between text-[10px] px-2 py-1 bg-slate-950/60 rounded-lg border border-slate-800/80 text-slate-400">
+                <span className="flex items-center gap-3">
+                  <span className="flex items-center gap-1 text-emerald-400">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    Covered in Resume ({matchedKeywords.length})
+                  </span>
+                  <span className="flex items-center gap-1 text-rose-400">
+                    <span className="w-2 h-2 rounded-full bg-rose-500" />
+                    Missing Gap ({missingKeywords.length})
+                  </span>
+                </span>
+                <span className="text-slate-500 font-mono hidden sm:inline">Click red keywords to add</span>
+              </div>
+
+              {/* Rendered Text with Keyword Highlighting */}
+              <div className="bg-slate-950/90 border border-slate-800/80 rounded-xl p-3 max-h-56 overflow-y-auto custom-scrollbar font-mono text-xs leading-relaxed text-slate-300">
+                {jdText.trim() ? (
+                  (() => {
+                    const allKws = [
+                      ...matchedKeywords.map((k) => ({ text: k, isMatched: true })),
+                      ...missingKeywords.map((k) => ({ text: k, isMatched: false })),
+                    ]
+                      .filter((k) => k.text && k.text.length > 1)
+                      .sort((a, b) => b.text.length - a.text.length);
+
+                    if (allKws.length === 0) {
+                      return <span className="whitespace-pre-wrap">{jdText}</span>;
+                    }
+
+                    const pattern = new RegExp(
+                      `(${allKws.map((k) => k.text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`,
+                      'gi'
+                    );
+
+                    const parts = jdText.split(pattern);
+
+                    return (
+                      <span className="whitespace-pre-wrap">
+                        {parts.map((part, i) => {
+                          const lower = part.toLowerCase();
+                          const foundMatched = matchedKeywords.find((k) => k.toLowerCase() === lower);
+                          const foundMissing = missingKeywords.find((k) => k.toLowerCase() === lower);
+
+                          if (foundMatched) {
+                            return (
+                              <mark
+                                key={i}
+                                className="bg-emerald-950/80 text-emerald-300 border border-emerald-600/60 rounded px-1 py-0.2 mx-0.5 font-bold inline-block"
+                                title={`✓ Covered in resume: ${foundMatched}`}
+                              >
+                                {part}
+                              </mark>
+                            );
+                          }
+
+                          if (foundMissing) {
+                            return (
+                              <button
+                                key={i}
+                                type="button"
+                                onClick={() => handleAddMissingKeywordToSkills(foundMissing)}
+                                className="bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-600/60 rounded px-1 py-0.2 mx-0.5 font-bold transition inline-flex items-center gap-0.5 active:scale-95 text-left"
+                                title={`⚠️ Missing: Click to add "${foundMissing}" to your Skills!`}
+                              >
+                                <span>{part}</span>
+                                <span className="text-[9px] text-rose-400 font-normal">+add</span>
+                              </button>
+                            );
+                          }
+
+                          return <span key={i}>{part}</span>;
+                        })}
+                      </span>
+                    );
+                  })()
+                ) : (
+                  <p className="text-slate-500 italic">No job description text pasted yet. Click "Edit Raw Text" above to paste a job posting.</p>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         <button
