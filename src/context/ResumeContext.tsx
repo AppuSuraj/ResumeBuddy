@@ -14,6 +14,8 @@ import {
 } from '../types/resume';
 import { INITIAL_RESUME_DATA, createBlankResume } from '../services/defaultData';
 import { analyzeJobDescription } from '../services/aiService';
+import { useGuestAuth } from '../hooks/useGuestAuth';
+import { isAdminAuthenticated } from '../services/adminAuthService';
 
 interface ResumeContextType {
   resumeData: ResumeData; // The actively editing resume
@@ -73,6 +75,12 @@ interface ResumeContextType {
   clearAllData: () => void;
   exportAsJson: () => void;
   importFromJson: (jsonStr: string) => boolean;
+
+  // User-Scoped Onboarding State & Actions
+  isOnboarded: boolean;
+  dismissOnboardingBanner: () => void;
+  startFromScratch: () => void;
+  effectiveUserId: string;
 }
 
 const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
@@ -129,74 +137,152 @@ const getStoredUserProfile = (): UserProfileCache => {
 };
 
 export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Persistent separate profile cache
-  const [userProfile, setUserProfile] = useState<UserProfileCache>(getStoredUserProfile);
+  const { user } = useGuestAuth();
+  const effectiveUserId = user?.id || (isAdminAuthenticated() ? 'admin' : 'guest_local');
 
-  // Load resumes list
-  const [resumes, setResumes] = useState<ResumeData[]>(() => {
+  const storageKeyResumes = `resumebuddy_v2_${effectiveUserId}_resumes`;
+  const storageKeyActiveId = `resumebuddy_v2_${effectiveUserId}_active_resume_id`;
+  const storageKeyProfile = `resumebuddy_v2_${effectiveUserId}_user_profile`;
+  const storageKeyOnboarded = `resumebuddy_v2_${effectiveUserId}_onboarded`;
+
+  // Helper to load or initialize user-scoped resume storage
+  const loadScopedData = (uid: string) => {
+    const keyRes = `resumebuddy_v2_${uid}_resumes`;
+    const keyAct = `resumebuddy_v2_${uid}_active_resume_id`;
+    const keyProf = `resumebuddy_v2_${uid}_user_profile`;
+    const keyOnb = `resumebuddy_v2_${uid}_onboarded`;
+
     try {
-      const savedResumes = localStorage.getItem(LOCAL_STORAGE_ALL_RESUMES);
-      if (savedResumes) {
-        return JSON.parse(savedResumes);
+      const saved = localStorage.getItem(keyRes);
+      if (saved) {
+        const parsed: ResumeData[] = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const savedActiveId = localStorage.getItem(keyAct) || parsed[0].id;
+          const active = parsed.find((r) => r.id === savedActiveId) || parsed[0];
+          let profile: UserProfileCache = {
+            fullName: active.personal?.fullName || '',
+            jobTitle: active.personal?.jobTitle || '',
+            email: active.personal?.email || '',
+            phone: active.personal?.phone || '',
+            location: active.personal?.location || '',
+            website: active.personal?.website || '',
+            linkedin: active.personal?.linkedin || '',
+            github: active.personal?.github || '',
+            photoUrl: active.personal?.photoUrl || '',
+          };
+          const savedProfile = localStorage.getItem(keyProf);
+          if (savedProfile) {
+            try {
+              profile = JSON.parse(savedProfile);
+            } catch {}
+          }
+          const onboardedVal = localStorage.getItem(keyOnb);
+          return {
+            resumes: parsed,
+            activeId: active.id,
+            activeResume: active,
+            profile,
+            isOnboarded: onboardedVal !== 'false',
+          };
+        }
       }
-      
-      const legacySaved = localStorage.getItem(LOCAL_STORAGE_KEY_V1);
-      if (legacySaved) {
-        const parsed = JSON.parse(legacySaved);
-        if (!parsed.id) parsed.id = 'legacy-' + Date.now();
-        if (!parsed.title) parsed.title = 'My Resume';
-        if (!parsed.updatedAt) parsed.updatedAt = Date.now();
-        return [parsed];
+
+      // Legacy fallback for admin if no scoped key exists yet
+      if (uid === 'admin') {
+        const legacyAll = localStorage.getItem(LOCAL_STORAGE_ALL_RESUMES);
+        if (legacyAll) {
+          const parsed: ResumeData[] = JSON.parse(legacyAll);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const savedId = localStorage.getItem(LOCAL_STORAGE_CURRENT_ID) || parsed[0].id;
+            const active = parsed.find((r) => r.id === savedId) || parsed[0];
+            localStorage.setItem(keyRes, JSON.stringify(parsed));
+            localStorage.setItem(keyAct, active.id);
+            localStorage.setItem(keyOnb, 'true');
+            return {
+              resumes: parsed,
+              activeId: active.id,
+              activeResume: active,
+              profile: getStoredUserProfile(),
+              isOnboarded: true,
+            };
+          }
+        }
       }
     } catch (e) {
-      console.warn('Failed to load saved resumes from local storage:', e);
+      console.warn('[ResumeContext] Failed reading scoped localStorage:', e);
     }
-    return [INITIAL_RESUME_DATA];
-  });
 
-  // Load current ID
-  const [currentResumeId, setCurrentResumeId] = useState<string>(() => {
-    try {
-      const savedId = localStorage.getItem(LOCAL_STORAGE_CURRENT_ID);
-      if (savedId) return savedId;
-    } catch (e) {}
-    return resumes[0]?.id || INITIAL_RESUME_DATA.id;
-  });
+    // Brand new user: pristine clean slate!
+    const blank = createBlankResume(undefined, '', '');
+    localStorage.setItem(keyRes, JSON.stringify([blank]));
+    localStorage.setItem(keyAct, blank.id);
+    localStorage.setItem(keyOnb, 'false');
 
-  // The active resume being edited
-  const [resumeData, setResumeData] = useState<ResumeData>(() => {
-    const active = resumes.find(r => r.id === currentResumeId);
-    return active || INITIAL_RESUME_DATA;
-  });
+    return {
+      resumes: [blank],
+      activeId: blank.id,
+      activeResume: blank,
+      profile: {
+        fullName: '',
+        jobTitle: '',
+        email: user?.email || '',
+        phone: '',
+        location: '',
+        website: '',
+        linkedin: '',
+        github: '',
+        photoUrl: '',
+      },
+      isOnboarded: false,
+    };
+  };
+
+  const initialScoped = loadScopedData(effectiveUserId);
+  const [resumes, setResumes] = useState<ResumeData[]>(initialScoped.resumes);
+  const [currentResumeId, setCurrentResumeId] = useState<string>(initialScoped.activeId);
+  const [resumeData, setResumeData] = useState<ResumeData>(initialScoped.activeResume);
+  const [userProfile, setUserProfile] = useState<UserProfileCache>(initialScoped.profile);
+  const [isOnboarded, setIsOnboarded] = useState<boolean>(initialScoped.isOnboarded);
 
   const [activeTab, setActiveTab] = useState<string>('target');
-  const [isJdModalOpen, setIsJdModalOpen] = useState<boolean>(true);
+  const [isJdModalOpen, setIsJdModalOpen] = useState<boolean>(false);
 
-  // Keep `resumeData` changes synced to the `resumes` array and local storage
+  // When switching users or logging out, clear and reload scoped memory state
   useEffect(() => {
-    setResumes(prevResumes => {
+    const scoped = loadScopedData(effectiveUserId);
+    setResumes(scoped.resumes);
+    setCurrentResumeId(scoped.activeId);
+    setResumeData(scoped.activeResume);
+    setUserProfile(scoped.profile);
+    setIsOnboarded(scoped.isOnboarded);
+    setIsJdModalOpen(false);
+  }, [effectiveUserId]);
+
+  // Keep `resumeData` changes synced to the user's scoped resumes array and localStorage
+  useEffect(() => {
+    setResumes((prevResumes) => {
       const updatedResume = { ...resumeData, updatedAt: Date.now() };
-      const exists = prevResumes.some(r => r.id === resumeData.id);
+      const exists = prevResumes.some((r) => r.id === resumeData.id);
       let newResumes;
       if (exists) {
-        newResumes = prevResumes.map(r => r.id === resumeData.id ? updatedResume : r);
+        newResumes = prevResumes.map((r) => (r.id === resumeData.id ? updatedResume : r));
       } else {
         newResumes = [...prevResumes, updatedResume];
       }
-      
+
       try {
-        localStorage.setItem(LOCAL_STORAGE_ALL_RESUMES, JSON.stringify(newResumes));
-        localStorage.setItem(LOCAL_STORAGE_CURRENT_ID, currentResumeId);
+        localStorage.setItem(storageKeyResumes, JSON.stringify(newResumes));
+        localStorage.setItem(storageKeyActiveId, currentResumeId);
       } catch (e) {
         console.warn('Failed to save to local storage', e);
       }
       return newResumes;
     });
-  }, [resumeData]);
+  }, [resumeData, storageKeyResumes, storageKeyActiveId, currentResumeId]);
 
   // Handle switching active resume properly without infinite loops
   useEffect(() => {
-    const target = resumes.find(r => r.id === currentResumeId);
+    const target = resumes.find((r) => r.id === currentResumeId);
     if (target && target.id !== resumeData.id) {
       setResumeData(target);
     }
@@ -204,15 +290,31 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   // Profile Cache Mutator
   const updateUserProfile = (profileUpdate: Partial<UserProfileCache>) => {
-    setUserProfile(prev => {
+    setUserProfile((prev) => {
       const updated = { ...prev, ...profileUpdate };
       try {
-        localStorage.setItem(LOCAL_STORAGE_USER_PROFILE, JSON.stringify(updated));
+        localStorage.setItem(storageKeyProfile, JSON.stringify(updated));
       } catch (e) {
         console.warn('Failed to cache user profile:', e);
       }
       return updated;
     });
+  };
+
+  const dismissOnboardingBanner = () => {
+    localStorage.setItem(storageKeyOnboarded, 'true');
+    setIsOnboarded(true);
+  };
+
+  const startFromScratch = () => {
+    const blank = createBlankResume(userProfile, '', '');
+    setResumeData(blank);
+    setResumes([blank]);
+    setCurrentResumeId(blank.id);
+    localStorage.setItem(storageKeyResumes, JSON.stringify([blank]));
+    localStorage.setItem(storageKeyActiveId, blank.id);
+    localStorage.setItem(storageKeyOnboarded, 'true');
+    setIsOnboarded(true);
   };
 
   // Start Clean Targeted Resume using cached profile info
@@ -257,8 +359,8 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const deleteResume = (id: string) => {
-    setResumes(prev => {
-      const filtered = prev.filter(r => r.id !== id);
+    setResumes((prev) => {
+      const filtered = prev.filter((r) => r.id !== id);
       if (id === currentResumeId) {
         if (filtered.length > 0) {
           setCurrentResumeId(filtered[0].id);
@@ -267,6 +369,9 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
           return prev;
         }
       }
+      try {
+        localStorage.setItem(storageKeyResumes, JSON.stringify(filtered));
+      } catch {}
       return filtered;
     });
   };
@@ -591,7 +696,18 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   };
 
   const loadSampleData = () => {
-    setResumeData(INITIAL_RESUME_DATA);
+    const sample: ResumeData = {
+      ...INITIAL_RESUME_DATA,
+      id: `res-${Date.now()}`,
+      updatedAt: Date.now(),
+    };
+    setResumeData(sample);
+    setResumes([sample]);
+    setCurrentResumeId(sample.id);
+    localStorage.setItem(storageKeyResumes, JSON.stringify([sample]));
+    localStorage.setItem(storageKeyActiveId, sample.id);
+    localStorage.setItem(storageKeyOnboarded, 'true');
+    setIsOnboarded(true);
   };
 
   const clearAllData = () => {
@@ -668,6 +784,10 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         clearAllData,
         exportAsJson,
         importFromJson,
+        isOnboarded,
+        dismissOnboardingBanner,
+        startFromScratch,
+        effectiveUserId,
       }}
     >
       {children}

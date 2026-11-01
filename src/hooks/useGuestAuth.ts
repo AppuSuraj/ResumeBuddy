@@ -12,6 +12,10 @@ export interface UseGuestAuthReturn {
     email: string,
     password: string
   ) => Promise<{ success: boolean; error?: string }>;
+  signUpWithGuestCredentials: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; needsConfirmation?: boolean; message?: string; error?: string }>;
   logout: () => Promise<void>;
 }
 
@@ -126,6 +130,69 @@ export function useGuestAuth(): UseGuestAuthReturn {
     []
   );
 
+  const signUpWithGuestCredentials = useCallback(
+    async (
+      email: string,
+      password: string
+    ): Promise<{ success: boolean; needsConfirmation?: boolean; message?: string; error?: string }> => {
+      setError(null);
+
+      const trimmedEmail = email.trim();
+      const trimmedPassword = password.trim();
+
+      if (!trimmedEmail || !trimmedPassword) {
+        const msg = 'Please enter both an Email Address and Password.';
+        setError(msg);
+        return { success: false, error: msg };
+      }
+
+      if (trimmedPassword.length < 6) {
+        const msg = 'Password must be at least 6 characters.';
+        setError(msg);
+        return { success: false, error: msg };
+      }
+
+      if (!isSupabaseConfigured) {
+        const msg =
+          'Supabase environment variables (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY) are not configured.';
+        setError(msg);
+        return { success: false, error: msg };
+      }
+
+      try {
+        const { data, error: signUpError } = await supabase.auth.signUp({
+          email: trimmedEmail,
+          password: trimmedPassword,
+        });
+
+        if (signUpError) {
+          setError(signUpError.message);
+          return { success: false, error: signUpError.message };
+        }
+
+        // If session returned immediately (Auto-confirm enabled in Supabase)
+        if (data.session) {
+          setSession(data.session);
+          setUser(data.user);
+          setError(null);
+          return { success: true, needsConfirmation: false };
+        }
+
+        // If email confirmation is required by Supabase settings
+        return {
+          success: true,
+          needsConfirmation: true,
+          message: 'Account created! Please check your email to confirm or sign in directly.',
+        };
+      } catch (err: any) {
+        const fallbackMsg = err?.message || 'Account registration failed. Please try again.';
+        setError(fallbackMsg);
+        return { success: false, error: fallbackMsg };
+      }
+    },
+    []
+  );
+
   const logout = useCallback(async (): Promise<void> => {
     try {
       if (isSupabaseConfigured) {
@@ -148,6 +215,7 @@ export function useGuestAuth(): UseGuestAuthReturn {
     error,
     isConfigured: isSupabaseConfigured,
     loginWithGuestCredentials,
+    signUpWithGuestCredentials,
     logout,
   };
 }

@@ -39,10 +39,12 @@ export const AdminGatekeeper: React.FC<Props> = ({ children }) => {
     error: guestHookError,
     isConfigured: isSupabaseReady,
     loginWithGuestCredentials,
+    signUpWithGuestCredentials,
   } = useGuestAuth();
 
   // Active gatekeeper view
   const [activeTab, setActiveTab] = useState<'guest' | 'admin'>('guest');
+  const [guestAuthMode, setGuestAuthMode] = useState<'signin' | 'signup'>('signin');
 
   // Admin form states
   const [password, setPassword] = useState('');
@@ -55,9 +57,11 @@ export const AdminGatekeeper: React.FC<Props> = ({ children }) => {
   // Guest form states
   const [guestEmail, setGuestEmail] = useState('');
   const [guestPassword, setGuestPassword] = useState('');
+  const [guestConfirmPassword, setGuestConfirmPassword] = useState('');
   const [showGuestPassword, setShowGuestPassword] = useState(false);
   const [submittingGuest, setSubmittingGuest] = useState(false);
   const [guestErrorMsg, setGuestErrorMsg] = useState<string | null>(null);
+  const [guestSuccessMsg, setGuestSuccessMsg] = useState<string | null>(null);
 
   const toast = useToast();
 
@@ -140,30 +144,66 @@ export const AdminGatekeeper: React.FC<Props> = ({ children }) => {
     }
   };
 
-  const handleGuestLogin = async (e: React.FormEvent) => {
+  const handleGuestSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setGuestErrorMsg(null);
+    setGuestSuccessMsg(null);
 
-    if (!guestEmail.trim() || !guestPassword.trim()) {
-      setGuestErrorMsg('Please enter both your Guest ID / Email and Access Key.');
+    const cleanEmail = guestEmail.trim();
+    const cleanPassword = guestPassword.trim();
+
+    if (!cleanEmail || !cleanPassword) {
+      setGuestErrorMsg('Please enter both your email address and password.');
       return;
     }
 
-    setSubmittingGuest(true);
-    try {
-      const res = await loginWithGuestCredentials(guestEmail, guestPassword);
-      if (res.success) {
-        toast.success('Guest Access Verified', 'Welcome to ResumeBuddy Private Workstation.');
-        try {
-          confetti({ particleCount: 45, spread: 60, origin: { y: 0.6 } });
-        } catch {}
-      } else if (res.error) {
-        setGuestErrorMsg(res.error);
+    if (guestAuthMode === 'signup') {
+      if (cleanPassword.length < 6) {
+        setGuestErrorMsg('Password must be at least 6 characters.');
+        return;
       }
-    } catch (err: any) {
-      setGuestErrorMsg(err?.message || 'Authentication error. Please try again.');
-    } finally {
-      setSubmittingGuest(false);
+      if (cleanPassword !== guestConfirmPassword.trim()) {
+        setGuestErrorMsg('Passwords do not match. Please re-enter.');
+        return;
+      }
+
+      setSubmittingGuest(true);
+      try {
+        const res = await signUpWithGuestCredentials(cleanEmail, cleanPassword);
+        if (res.success) {
+          if (res.needsConfirmation) {
+            setGuestSuccessMsg(res.message || 'Account created! Please check your email to confirm or sign in directly.');
+          } else {
+            toast.success('Account Created', 'Welcome to ResumeBuddy Private Workstation.');
+            try {
+              confetti({ particleCount: 45, spread: 60, origin: { y: 0.6 } });
+            } catch {}
+          }
+        } else if (res.error) {
+          setGuestErrorMsg(res.error);
+        }
+      } catch (err: any) {
+        setGuestErrorMsg(err?.message || 'Registration error. Please try again.');
+      } finally {
+        setSubmittingGuest(false);
+      }
+    } else {
+      setSubmittingGuest(true);
+      try {
+        const res = await loginWithGuestCredentials(cleanEmail, cleanPassword);
+        if (res.success) {
+          toast.success('Guest Access Verified', 'Welcome to ResumeBuddy Private Workstation.');
+          try {
+            confetti({ particleCount: 45, spread: 60, origin: { y: 0.6 } });
+          } catch {}
+        } else if (res.error) {
+          setGuestErrorMsg(res.error);
+        }
+      } catch (err: any) {
+        setGuestErrorMsg(err?.message || 'Authentication error. Please try again.');
+      } finally {
+        setSubmittingGuest(false);
+      }
     }
   };
 
@@ -259,6 +299,46 @@ export const AdminGatekeeper: React.FC<Props> = ({ children }) => {
               </div>
             )}
 
+            {/* Guest Sub-mode: Sign In vs Sign Up */}
+            <div className="flex bg-slate-950/80 p-0.5 rounded-lg border border-slate-800">
+              <button
+                type="button"
+                onClick={() => {
+                  setGuestAuthMode('signin');
+                  setGuestErrorMsg(null);
+                  setGuestSuccessMsg(null);
+                }}
+                className={`flex-1 py-1 text-[11px] font-semibold rounded-md transition cursor-pointer ${
+                  guestAuthMode === 'signin'
+                    ? 'bg-blue-600/80 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Sign In
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setGuestAuthMode('signup');
+                  setGuestErrorMsg(null);
+                  setGuestSuccessMsg(null);
+                }}
+                className={`flex-1 py-1 text-[11px] font-semibold rounded-md transition cursor-pointer ${
+                  guestAuthMode === 'signup'
+                    ? 'bg-blue-600/80 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                Create Free Account
+              </button>
+            </div>
+
+            {guestSuccessMsg && (
+              <div className="p-3 rounded-xl bg-emerald-950/50 border border-emerald-800/70 text-xs text-emerald-300 flex items-start gap-2 animate-in fade-in">
+                <span>{guestSuccessMsg}</span>
+              </div>
+            )}
+
             {displayedGuestError && (
               <div className="p-3 rounded-xl bg-rose-950/50 border border-rose-800/70 text-xs text-rose-300 flex items-start gap-2 animate-in fade-in">
                 <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
@@ -266,10 +346,10 @@ export const AdminGatekeeper: React.FC<Props> = ({ children }) => {
               </div>
             )}
 
-            <form onSubmit={handleGuestLogin} className="space-y-4">
+            <form onSubmit={handleGuestSubmit} className="space-y-3.5">
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                  Guest ID / Email
+                  Email Address
                 </label>
                 <input
                   type="email"
@@ -285,16 +365,16 @@ export const AdminGatekeeper: React.FC<Props> = ({ children }) => {
 
               <div>
                 <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                  Access Key / Password
+                  {guestAuthMode === 'signup' ? 'Password (min 6 characters)' : 'Access Key / Password'}
                 </label>
                 <div className="relative">
                   <input
                     type={showGuestPassword ? 'text' : 'password'}
                     value={guestPassword}
                     onChange={(e) => setGuestPassword(e.target.value)}
-                    placeholder="Enter guest access key..."
+                    placeholder={guestAuthMode === 'signup' ? 'Create a secure password...' : 'Enter guest access key...'}
                     required
-                    autoComplete="current-password"
+                    autoComplete={guestAuthMode === 'signup' ? 'new-password' : 'current-password'}
                     className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 pr-10 transition"
                   />
                   <button
@@ -307,19 +387,38 @@ export const AdminGatekeeper: React.FC<Props> = ({ children }) => {
                 </div>
               </div>
 
+              {guestAuthMode === 'signup' && (
+                <div>
+                  <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-300 mb-1.5">
+                    Confirm Password
+                  </label>
+                  <input
+                    type={showGuestPassword ? 'text' : 'password'}
+                    value={guestConfirmPassword}
+                    onChange={(e) => setGuestConfirmPassword(e.target.value)}
+                    placeholder="Re-enter password to confirm..."
+                    required
+                    autoComplete="new-password"
+                    className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                  />
+                </div>
+              )}
+
               <button
                 type="submit"
                 disabled={submittingGuest}
-                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.99] transition shadow-lg shadow-blue-600/20 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.99] transition shadow-lg shadow-blue-600/20 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer mt-2"
               >
                 {submittingGuest ? (
                   <>
                     <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                    <span>Verifying Credentials...</span>
+                    <span>{guestAuthMode === 'signup' ? 'Creating Account...' : 'Verifying Credentials...'}</span>
                   </>
                 ) : (
                   <>
-                    <span>Enter Workstation</span>
+                    <span>
+                      {guestAuthMode === 'signup' ? 'Create Account & Start Building' : 'Enter Workstation'}
+                    </span>
                     <ArrowRight className="w-4 h-4" />
                   </>
                 )}

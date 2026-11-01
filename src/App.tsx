@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useResume } from './context/ResumeContext';
 import { TopNavbar } from './components/header/TopNavbar';
 import { GuestGatekeeperModal } from './components/auth/GuestGatekeeperModal';
+import { WelcomeHeroBanner } from './components/onboarding/WelcomeHeroBanner';
 import { JobDescriptionModal } from './components/onboarding/JobDescriptionModal';
 import { EditorTabs } from './components/editor/EditorTabs';
 import { TargetJobPanel } from './components/editor/TargetJobPanel';
@@ -192,7 +193,10 @@ export const MainApp: React.FC = () => {
           </div>
 
           {/* Scalable Resume Canvas */}
-          <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-center items-start bg-slate-950/80 custom-scrollbar">
+          <div className="flex-1 overflow-auto p-4 md:p-8 flex flex-col items-center justify-start bg-slate-950/80 custom-scrollbar">
+            {/* High-Impact Boasting Welcome Hero Banner for First-Time Users */}
+            <WelcomeHeroBanner />
+
             <div
               style={{
                 transform: `scale(${zoomLevel / 100})`,
