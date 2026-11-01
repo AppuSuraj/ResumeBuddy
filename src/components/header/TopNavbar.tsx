@@ -20,12 +20,15 @@ import {
   Lock,
   Shield,
   KeyRound,
-  Printer
+  Printer,
+  LogOut,
+  UserCheck
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ResumeManagerModal } from './ResumeManagerModal';
 import { UploadResumeModal } from '../onboarding/UploadResumeModal';
 import { logoutAdmin, changeMasterPassword } from '../../services/adminAuthService';
+import { useGuestAuth } from '../../hooks/useGuestAuth';
 
 export const TopNavbar: React.FC = () => {
   const { 
@@ -46,8 +49,11 @@ export const TopNavbar: React.FC = () => {
   const [showManagerModal, setShowManagerModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showGuestMenu, setShowGuestMenu] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState(getStoredApiKey());
   const [savedKeySuccess, setSavedKeySuccess] = useState(false);
+
+  const { session, user, logout: logoutGuest } = useGuestAuth();
 
   // Admin Security modal states
   const [settingsTab, setSettingsTab] = useState<'ai' | 'security'>('ai');
@@ -278,6 +284,51 @@ export const TopNavbar: React.FC = () => {
           >
             <Lock className="w-4 h-4" />
           </button>
+
+          {/* Authenticated Guest Session Pill & Logout Dropdown */}
+          {session && (
+            <div className="relative">
+              <button
+                onClick={() => setShowGuestMenu(!showGuestMenu)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-emerald-500/40 text-xs font-semibold text-slate-200 transition shadow-sm cursor-pointer"
+                title={`Authenticated Guest: ${user?.email || 'Active'}`}
+              >
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="hidden sm:inline text-emerald-300">Guest Session</span>
+                <ChevronDown className="w-3 h-3 text-slate-400" />
+              </button>
+
+              {showGuestMenu && (
+                <>
+                  <div
+                    className="fixed inset-0 z-30"
+                    onClick={() => setShowGuestMenu(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-60 bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-xl shadow-2xl p-2 z-40 space-y-1.5 animate-in fade-in zoom-in-95">
+                    <div className="px-2.5 py-1.5 border-b border-slate-800 text-[11px]">
+                      <div className="text-slate-400 text-[10px] uppercase font-semibold tracking-wider">
+                        Signed in as Guest
+                      </div>
+                      <div className="font-semibold text-slate-200 truncate mt-0.5">
+                        {user?.email || 'Authorized Tester'}
+                      </div>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        setShowGuestMenu(false);
+                        await logoutGuest();
+                        toast.info('Session Ended', 'Guest session logged out.');
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-2 text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 rounded-lg transition text-left cursor-pointer"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>End Session / Log Out</span>
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Export Dropdown Group */}
           <div className="relative">

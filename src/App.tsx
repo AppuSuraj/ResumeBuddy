@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useResume } from './context/ResumeContext';
 import { TopNavbar } from './components/header/TopNavbar';
+import { GuestGatekeeperModal } from './components/auth/GuestGatekeeperModal';
 import { JobDescriptionModal } from './components/onboarding/JobDescriptionModal';
 import { EditorTabs } from './components/editor/EditorTabs';
 import { TargetJobPanel } from './components/editor/TargetJobPanel';
@@ -61,6 +62,9 @@ export const MainApp: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+      {/* Guest Authentication Gatekeeper Modal (Active when guest session is required) */}
+      <GuestGatekeeperModal />
+
       {/* Top Navbar */}
       <TopNavbar />
 
