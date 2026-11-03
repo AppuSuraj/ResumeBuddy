@@ -188,27 +188,22 @@ export const SupportTipModal: React.FC<SupportTipModalProps> = ({
           <X className="w-5 h-5" />
         </button>
 
-        {/* Header Icon & Brand Pill */}
+        {/* Header Badge & Hero Joke Typography */}
         <div className="flex flex-col items-center text-center mb-4 pt-1">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-amber-600 flex items-center justify-center text-white shadow-lg shadow-amber-500/25 ring-1 ring-white/10 mb-3">
-            <Coffee className="w-6 h-6" />
-          </div>
-
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-[10px] font-semibold tracking-wide uppercase text-amber-300 mb-2">
-            <Sparkles className="w-3 h-3 text-amber-400" />
-            <span>Post-Download Fuel</span>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-[11px] font-semibold uppercase tracking-wider text-amber-300 mb-3">
+            <span>☕ Support Independent Software</span>
           </div>
 
           <h2
             id="support-modal-title"
-            className="text-base sm:text-lg font-bold tracking-tight text-white mb-2 leading-snug"
+            className="text-xl md:text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-orange-300 to-amber-400 mb-3 leading-snug"
           >
             {variant.title}
           </h2>
 
-          <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
+          <div className="text-slate-200 text-sm leading-relaxed mb-2 bg-slate-800/40 p-4 rounded-xl border border-slate-700/50 text-left">
             {variant.body}
-          </p>
+          </div>
         </div>
 
         {/* Tier Selector Buttons (Touch-friendly 44px+ targets) */}
@@ -254,9 +249,9 @@ export const SupportTipModal: React.FC<SupportTipModalProps> = ({
             />
           </div>
 
-          <div className="mt-2.5 flex items-center gap-2 text-xs font-mono font-medium text-slate-300">
-            <span>Scan with any UPI App:</span>
-            <span className="text-sky-400 font-bold bg-sky-950/70 border border-sky-800/80 px-2 py-0.5 rounded-full">
+          <div className="mt-2.5 flex items-center gap-2 text-xs font-medium text-slate-300">
+            <span>Scan with GPay, PhonePe, or Paytm to fuel the latte:</span>
+            <span className="text-sky-400 font-bold bg-sky-950/70 border border-sky-800/80 px-2 py-0.5 rounded-full font-mono">
               ₹{selectedAmount}
             </span>
           </div>

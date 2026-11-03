@@ -1,10 +1,10 @@
 import React from 'react';
 import { useResume } from '../../context/ResumeContext';
 import { useToast } from '../common/Toast';
-import { GraduationCap, Plus, Trash2 } from 'lucide-react';
+import { GraduationCap, Plus, Trash2, ArrowRight } from 'lucide-react';
 
 export const EducationForm: React.FC = () => {
-  const { resumeData, updateEducationItem, addEducationItem, deleteEducationItem } = useResume();
+  const { resumeData, updateEducationItem, addEducationItem, deleteEducationItem, setActiveTab } = useResume();
   const { education } = resumeData;
   const toast = useToast();
 
@@ -137,6 +137,19 @@ export const EducationForm: React.FC = () => {
           ))}
         </div>
       )}
+
+      {/* Footer Navigation Button to Next Section */}
+      <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
+        <span className="text-xs text-slate-400 font-medium">Step 6 of 7: Education History</span>
+        <button
+          type="button"
+          onClick={() => setActiveTab('projects')}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl transition shadow-md shadow-blue-600/20 active:scale-95 cursor-pointer"
+        >
+          <span>Next: Projects & Work</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 };

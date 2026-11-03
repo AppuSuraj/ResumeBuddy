@@ -37,6 +37,13 @@ export const MobileAccordionEditor: React.FC = () => {
   const { resumeData, activeTab, setActiveTab } = useResume();
   const [openSectionId, setOpenSectionId] = useState<string>(activeTab || 'personal');
 
+  // Keep accordion expanded section synchronized when navigating via Next Section buttons
+  React.useEffect(() => {
+    if (activeTab) {
+      setOpenSectionId(activeTab);
+    }
+  }, [activeTab]);
+
   const getSectionStatus = (id: string): boolean => {
     switch (id) {
       case 'target':

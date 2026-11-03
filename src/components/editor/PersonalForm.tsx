@@ -1,10 +1,10 @@
 import React from 'react';
 import { useResume } from '../../context/ResumeContext';
 import { useToast } from '../common/Toast';
-import { User, Mail, Phone, MapPin, Globe, Link, Image as ImageIcon, Sparkles, BookmarkCheck } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Globe, Link, Image as ImageIcon, Sparkles, BookmarkCheck, ArrowRight } from 'lucide-react';
 
 export const PersonalForm: React.FC = () => {
-  const { resumeData, updatePersonal, userProfile, updateUserProfile } = useResume();
+  const { resumeData, updatePersonal, userProfile, updateUserProfile, setActiveTab } = useResume();
   const { personal } = resumeData;
   const toast = useToast();
 
@@ -183,6 +183,19 @@ export const PersonalForm: React.FC = () => {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Footer Navigation Button to Next Section */}
+      <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
+        <span className="text-xs text-slate-400 font-medium">Step 2 of 7: Personal Details</span>
+        <button
+          type="button"
+          onClick={() => setActiveTab('summary')}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl transition shadow-md shadow-blue-600/20 active:scale-95 cursor-pointer"
+        >
+          <span>Next: Professional Summary</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );

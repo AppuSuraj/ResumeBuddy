@@ -1,10 +1,10 @@
 import React from 'react';
 import { useResume } from '../../context/ResumeContext';
 import { useToast } from '../common/Toast';
-import { FolderGit2, Plus, Trash2, ExternalLink } from 'lucide-react';
+import { FolderGit2, Plus, Trash2, ExternalLink, ArrowRight } from 'lucide-react';
 
 export const ProjectsForm: React.FC = () => {
-  const { resumeData, updateProjectItem, addProjectItem, deleteProjectItem } = useResume();
+  const { resumeData, updateProjectItem, addProjectItem, deleteProjectItem, setActiveTab } = useResume();
   const { projects } = resumeData;
   const toast = useToast();
 
@@ -129,6 +129,19 @@ export const ProjectsForm: React.FC = () => {
           ))}
         </div>
       )}
+
+      {/* Footer Navigation Button to Next Section */}
+      <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
+        <span className="text-xs text-slate-400 font-medium">Step 7 of 7: Featured Projects</span>
+        <button
+          type="button"
+          onClick={() => setActiveTab('templates')}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl transition shadow-md shadow-blue-600/20 active:scale-95 cursor-pointer"
+        >
+          <span>Next: Pick Resume Template</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 };

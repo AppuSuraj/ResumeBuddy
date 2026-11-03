@@ -48,6 +48,7 @@ export const GuestGatekeeperModal: React.FC<GuestGatekeeperModalProps> = ({ onBy
 
   // Guest credential fields
   const [email, setEmail] = useState('');
+  const [isEmailDirty, setIsEmailDirty] = useState(false);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -60,6 +61,11 @@ export const GuestGatekeeperModal: React.FC<GuestGatekeeperModalProps> = ({ onBy
   const [submitting, setSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Strict email format validator (/^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/)
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+  const isEmailValid = EMAIL_REGEX.test(email.trim());
+  const showEmailError = authMode === 'signup' && isEmailDirty && email.trim().length > 0 && !isEmailValid;
 
   // 1. Detect ?admin=true in URL
   useEffect(() => {
@@ -118,6 +124,10 @@ export const GuestGatekeeperModal: React.FC<GuestGatekeeperModalProps> = ({ onBy
     }
 
     if (authMode === 'signup') {
+      if (!isEmailValid) {
+        setLocalError('Please enter a valid email address (e.g., name@domain.com).');
+        return;
+      }
       if (cleanPassword.length < 6) {
         setLocalError('Password must be at least 6 characters.');
         return;
@@ -302,6 +312,7 @@ export const GuestGatekeeperModal: React.FC<GuestGatekeeperModalProps> = ({ onBy
               setAuthMode('signin');
               setLocalError(null);
               setSuccessMsg(null);
+              setIsEmailDirty(false);
             }}
             className={`flex-1 py-1.5 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer ${
               authMode === 'signin'
@@ -318,6 +329,7 @@ export const GuestGatekeeperModal: React.FC<GuestGatekeeperModalProps> = ({ onBy
               setAuthMode('signup');
               setLocalError(null);
               setSuccessMsg(null);
+              setIsEmailDirty(false);
             }}
             className={`flex-1 py-1.5 text-xs font-semibold rounded-lg flex items-center justify-center gap-1.5 transition cursor-pointer ${
               authMode === 'signup'
@@ -411,13 +423,27 @@ export const GuestGatekeeperModal: React.FC<GuestGatekeeperModalProps> = ({ onBy
                 id="guest-email"
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setIsEmailDirty(true);
+                }}
+                onBlur={() => setIsEmailDirty(true)}
                 placeholder="e.g. colleague@company.com"
                 required
                 autoFocus
                 autoComplete="username"
-                className="w-full bg-slate-800/90 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition"
+                className={`w-full bg-slate-800/90 border rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none transition ${
+                  showEmailError
+                    ? 'border-rose-500 focus:ring-2 focus:ring-rose-500/50 focus:border-rose-500'
+                    : 'border-slate-700 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500'
+                }`}
               />
+              {showEmailError && (
+                <p className="text-[11px] text-rose-400 mt-1.5 flex items-center gap-1.5 animate-in fade-in">
+                  <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-400" />
+                  <span>Please enter a valid email address (e.g., name@domain.com)</span>
+                </p>
+              )}
             </div>
 
             <div>
@@ -473,8 +499,8 @@ export const GuestGatekeeperModal: React.FC<GuestGatekeeperModalProps> = ({ onBy
             {/* Primary CTA Button */}
             <button
               type="submit"
-              disabled={submitting}
-              className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.99] transition shadow-lg shadow-blue-600/25 disabled:opacity-50 flex items-center justify-center gap-2 mt-2 cursor-pointer"
+              disabled={submitting || (authMode === 'signup' && (!isEmailValid || password.trim().length < 6))}
+              className="w-full py-2.5 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-600 hover:from-blue-500 hover:to-indigo-500 active:scale-[0.99] transition shadow-lg shadow-blue-600/25 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-2 cursor-pointer"
             >
               {submitting ? (
                 <>

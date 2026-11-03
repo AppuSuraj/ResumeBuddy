@@ -81,6 +81,10 @@ interface ResumeContextType {
   dismissOnboardingBanner: () => void;
   startFromScratch: () => void;
   effectiveUserId: string;
+
+  // Real-time skill injection tracking for UI pulse feedback
+  recentlyAddedSkills: string[];
+  addRecentlyAddedSkill: (skill: string) => void;
 }
 
 const ResumeContext = createContext<ResumeContextType | undefined>(undefined);
@@ -246,6 +250,17 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
   const [activeTab, setActiveTab] = useState<string>('target');
   const [isJdModalOpen, setIsJdModalOpen] = useState<boolean>(false);
+  const [recentlyAddedSkills, setRecentlyAddedSkills] = useState<string[]>([]);
+
+  const addRecentlyAddedSkill = React.useCallback((skill: string) => {
+    const normalized = skill.trim().toLowerCase();
+    if (!normalized) return;
+    setRecentlyAddedSkills((prev) => [...prev, normalized]);
+    // Keep the "New" pulse badge active for 15 seconds
+    setTimeout(() => {
+      setRecentlyAddedSkills((prev) => prev.filter((s) => s !== normalized));
+    }, 15000);
+  }, []);
 
   // When switching users or logging out, clear and reload scoped memory state
   useEffect(() => {
@@ -788,6 +803,8 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
         dismissOnboardingBanner,
         startFromScratch,
         effectiveUserId,
+        recentlyAddedSkills,
+        addRecentlyAddedSkill,
       }}
     >
       {children}

@@ -2,10 +2,17 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useResume } from '../../context/ResumeContext';
 import { useToast } from '../common/Toast';
 import { getSuggestedSkills, getLiveAiSkillSuggestions, hasApiKey } from '../../services/aiService';
-import { Wrench, Plus, Trash2, X, Sparkles, Loader2, KeyRound, Bot } from 'lucide-react';
+import { Wrench, Plus, Trash2, X, Sparkles, Loader2, KeyRound, Bot, ArrowRight } from 'lucide-react';
 
 export const SkillsForm: React.FC = () => {
-  const { resumeData, updateSkillCategory, addSkillCategory, deleteSkillCategory } = useResume();
+  const { 
+    resumeData, 
+    updateSkillCategory, 
+    addSkillCategory, 
+    deleteSkillCategory,
+    setActiveTab,
+    recentlyAddedSkills 
+  } = useResume();
   const { skills, jobTarget, personal } = resumeData;
   const toast = useToast();
 
@@ -246,21 +253,33 @@ export const SkillsForm: React.FC = () => {
                   {cat.skills.length === 0 ? (
                     <span className="text-xs text-slate-500 italic p-1">No skills added yet in this group. Type below or click AI suggestions.</span>
                   ) : (
-                    cat.skills.map((skill, sIdx) => (
-                      <span
-                        key={sIdx}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800 text-slate-200 border border-slate-700/80 text-xs font-medium group hover:border-slate-600 transition"
-                      >
-                        <span>{skill}</span>
-                        <button
-                          onClick={() => handleRemoveSkillTag(cat.id, sIdx)}
-                          className="text-slate-400 hover:text-rose-400 transition"
-                          title="Remove"
+                    cat.skills.map((skill, sIdx) => {
+                      const isRecentlyAdded = recentlyAddedSkills?.includes(skill.trim().toLowerCase());
+                      return (
+                        <span
+                          key={sIdx}
+                          className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium group transition ${
+                            isRecentlyAdded
+                              ? 'bg-emerald-950/70 text-emerald-200 border border-emerald-500/70 shadow-sm shadow-emerald-500/20'
+                              : 'bg-slate-800 text-slate-200 border border-slate-700/80 hover:border-slate-600'
+                          }`}
                         >
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))
+                          <span>{skill}</span>
+                          {isRecentlyAdded && (
+                            <span className="px-1.5 py-0.2 text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded animate-pulse">
+                              New
+                            </span>
+                          )}
+                          <button
+                            onClick={() => handleRemoveSkillTag(cat.id, sIdx)}
+                            className="text-slate-400 hover:text-rose-400 transition"
+                            title="Remove"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </span>
+                      );
+                    })
                   )}
                 </div>
 
@@ -352,6 +371,19 @@ export const SkillsForm: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Footer Navigation Button to Next Section */}
+      <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
+        <span className="text-xs text-slate-400 font-medium">Step 5 of 7: Core Competencies</span>
+        <button
+          type="button"
+          onClick={() => setActiveTab('education')}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl transition shadow-md shadow-blue-600/20 active:scale-95 cursor-pointer"
+        >
+          <span>Next: Education History</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 };

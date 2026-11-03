@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useResume } from '../../context/ResumeContext';
 import { 
   Target, 
@@ -10,11 +10,33 @@ import {
   FolderGit2, 
   PlusCircle, 
   Palette, 
-  LayoutGrid 
+  LayoutGrid,
+  ChevronRight
 } from 'lucide-react';
 
 export const EditorTabs: React.FC = () => {
   const { activeTab, setActiveTab, resumeData } = useResume();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollRight(scrollWidth - scrollLeft - clientWidth > 15);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [checkScroll]);
+
+  const handleScrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 160, behavior: 'smooth' });
+    }
+  };
 
   const getSectionStatus = (id: string): boolean => {
     switch (id) {
@@ -53,30 +75,52 @@ export const EditorTabs: React.FC = () => {
   ];
 
   return (
-    <div className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 px-2 py-1.5 flex items-center overflow-x-auto scrollbar-none gap-1">
-      {tabs.map((tab) => {
-        const Icon = tab.icon;
-        const isActive = activeTab === tab.id;
-        const isFilled = getSectionStatus(tab.id);
+    <div className="relative bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+      <div 
+        ref={scrollRef}
+        onScroll={checkScroll}
+        className="px-2 py-2 flex items-center overflow-x-auto scrollbar-none gap-1.5 scroll-smooth"
+      >
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          const isFilled = getSectionStatus(tab.id);
 
-        return (
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`group relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold tracking-wide whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                isActive
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 ring-1 ring-white/10'
+                  : 'bg-slate-800/60 text-slate-300 hover:text-white hover:bg-slate-700/60 border border-slate-700/40'
+              }`}
+            >
+              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`} />
+              <span>{tab.label}</span>
+              {isFilled && !['templates', 'style'].includes(tab.id) && (
+                <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white' : 'bg-emerald-400'}`} />
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Horizontal Scroll Right Gradient Fade Mask & Indicator */}
+      {canScrollRight && (
+        <>
+          <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-slate-900 via-slate-900/80 to-transparent pointer-events-none z-10" />
           <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={`group relative flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all duration-150 ${
-              isActive
-                ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 shadow-sm shadow-blue-500/10'
-                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50 border border-transparent'
-            }`}
+            type="button"
+            onClick={handleScrollRight}
+            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-blue-300 border border-slate-700 shadow-md backdrop-blur-md transition cursor-pointer"
+            title="Scroll to view more sections"
           >
-            <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-blue-400' : 'text-slate-400 group-hover:text-slate-300'}`} />
-            <span>{tab.label}</span>
-            {isFilled && !['templates', 'style'].includes(tab.id) && (
-              <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-blue-400' : 'bg-emerald-500/70'}`} />
-            )}
+            <span>More sections</span>
+            <ChevronRight className="w-3.5 h-3.5 text-blue-400" />
           </button>
-        );
-      })}
+        </>
+      )}
     </div>
   );
 };

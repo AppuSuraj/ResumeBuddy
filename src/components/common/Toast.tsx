@@ -3,19 +3,25 @@ import { CheckCircle2, AlertCircle, Info, XCircle, X } from 'lucide-react';
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning';
 
+export interface ToastAction {
+  label: string;
+  onClick: () => void;
+}
+
 export interface ToastMessage {
   id: string;
   type: ToastType;
   title: string;
   message?: string;
+  action?: ToastAction;
 }
 
 interface ToastContextType {
-  showToast: (type: ToastType, title: string, message?: string) => void;
-  success: (title: string, message?: string) => void;
-  error: (title: string, message?: string) => void;
-  info: (title: string, message?: string) => void;
-  warning: (title: string, message?: string) => void;
+  showToast: (type: ToastType, title: string, message?: string, action?: ToastAction) => void;
+  success: (title: string, message?: string, action?: ToastAction) => void;
+  error: (title: string, message?: string, action?: ToastAction) => void;
+  info: (title: string, message?: string, action?: ToastAction) => void;
+  warning: (title: string, message?: string, action?: ToastAction) => void;
 }
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
@@ -27,21 +33,22 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const showToast = useCallback((type: ToastType, title: string, message?: string) => {
+  const showToast = useCallback((type: ToastType, title: string, message?: string, action?: ToastAction) => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
-    const newToast: ToastMessage = { id, type, title, message };
+    const newToast: ToastMessage = { id, type, title, message, action };
     
     setToasts((prev) => [...prev.slice(-3), newToast]); // Keep maximum 4 toasts visible
 
+    const duration = action ? 5500 : 3500;
     setTimeout(() => {
       removeToast(id);
-    }, 3500);
+    }, duration);
   }, [removeToast]);
 
-  const success = useCallback((title: string, message?: string) => showToast('success', title, message), [showToast]);
-  const error = useCallback((title: string, message?: string) => showToast('error', title, message), [showToast]);
-  const info = useCallback((title: string, message?: string) => showToast('info', title, message), [showToast]);
-  const warning = useCallback((title: string, message?: string) => showToast('warning', title, message), [showToast]);
+  const success = useCallback((title: string, message?: string, action?: ToastAction) => showToast('success', title, message, action), [showToast]);
+  const error = useCallback((title: string, message?: string, action?: ToastAction) => showToast('error', title, message, action), [showToast]);
+  const info = useCallback((title: string, message?: string, action?: ToastAction) => showToast('info', title, message, action), [showToast]);
+  const warning = useCallback((title: string, message?: string, action?: ToastAction) => showToast('warning', title, message, action), [showToast]);
 
   return (
     <ToastContext.Provider value={{ showToast, success, error, info, warning }}>
@@ -75,6 +82,20 @@ export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ childre
                 <p className="font-semibold text-white leading-tight">{toast.title}</p>
                 {toast.message && (
                   <p className="text-slate-300 mt-0.5 leading-snug">{toast.message}</p>
+                )}
+                {toast.action && (
+                  <div className="mt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        toast.action?.onClick();
+                        removeToast(toast.id);
+                      }}
+                      className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-400 hover:text-emerald-300 underline underline-offset-2 transition cursor-pointer"
+                    >
+                      <span>{toast.action.label}</span>
+                    </button>
+                  </div>
                 )}
               </div>
               <button

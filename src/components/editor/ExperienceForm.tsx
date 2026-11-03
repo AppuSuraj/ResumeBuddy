@@ -3,7 +3,7 @@ import { useResume } from '../../context/ResumeContext';
 import { useToast } from '../common/Toast';
 import { generateAiBullets } from '../../services/aiService';
 import { WorkExperience } from '../../types/resume';
-import { Briefcase, Plus, Trash2, ChevronUp, ChevronDown, Sparkles, Wand2, X, Check, Archive, Layers } from 'lucide-react';
+import { Briefcase, Plus, Trash2, ChevronUp, ChevronDown, Sparkles, Wand2, X, Check, Archive, Layers, ArrowRight } from 'lucide-react';
 
 export const ExperienceForm: React.FC = () => {
   const { 
@@ -14,7 +14,8 @@ export const ExperienceForm: React.FC = () => {
     reorderExperience,
     toggleBulletBankItem,
     addBulletToBank,
-    deleteBulletFromBank
+    deleteBulletFromBank,
+    setActiveTab
   } = useResume();
   const { experience, jobTarget } = resumeData;
   const toast = useToast();
@@ -441,6 +442,19 @@ export const ExperienceForm: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Footer Navigation Button to Next Section */}
+      <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
+        <span className="text-xs text-slate-400 font-medium">Step 4 of 7: Work History</span>
+        <button
+          type="button"
+          onClick={() => setActiveTab('skills')}
+          className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white text-xs font-bold rounded-xl transition shadow-md shadow-blue-600/20 active:scale-95 cursor-pointer"
+        >
+          <span>Next: Skills Bank</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
     </div>
   );
 };
