@@ -107,12 +107,22 @@ export const ModernMinimalTemplate: React.FC<{ data: ResumeData }> = ({ data }) 
         <section className="mb-6">
           <h2 className="text-xs font-bold uppercase tracking-widest text-slate-500 mb-2">Skills & Expertise</h2>
           <div className="space-y-2">
-            {skills.map((cat) => (
-              <div key={cat.id} className="text-xs">
-                <span className="font-semibold text-slate-800">{cat.categoryName}: </span>
-                <span className="text-slate-600">{cat.skills.join(', ')}</span>
-              </div>
-            ))}
+            {skills.map((cat) => {
+              const showCategory = Boolean(
+                cat.categoryName &&
+                cat.categoryName.trim() !== '' &&
+                cat.categoryName !== 'Technical & Professional Skills' &&
+                cat.categoryName !== 'Core Skills & Technical Competencies'
+              );
+              return (
+                <div key={cat.id} className="text-xs">
+                  {showCategory && (
+                    <span className="font-semibold text-slate-800">{cat.categoryName}: </span>
+                  )}
+                  <span className="text-slate-600">{cat.skills.join(', ')}</span>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}

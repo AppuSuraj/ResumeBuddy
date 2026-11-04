@@ -16,8 +16,7 @@ import {
   ChevronDown, 
   ChevronUp, 
   Tag, 
-  FolderTree,
-  SlidersHorizontal
+  FolderTree
 } from 'lucide-react';
 
 const DOMAIN_CATEGORIES = [
@@ -74,7 +73,7 @@ export const SkillsForm: React.FC = () => {
 
   const [standaloneInput, setStandaloneInput] = useState<string>('');
   const [selectedDomain, setSelectedDomain] = useState<DomainCategory>('Role Recommended');
-  const [showCategoryOrganizer, setShowCategoryOrganizer] = useState<boolean>(skills.length > 1);
+  const [showCategoryOrganizer, setShowCategoryOrganizer] = useState<boolean>(false);
   const [newSkillInput, setNewSkillInput] = useState<{ [catId: string]: string }>({});
   const [inlineSuggestions, setInlineSuggestions] = useState<{ [catId: string]: string[] }>({});
   const [loadingCategoryAi, setLoadingCategoryAi] = useState<{ [catId: string]: boolean }>({});
@@ -88,12 +87,34 @@ export const SkillsForm: React.FC = () => {
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
+  // Cleanse legacy default categoryName ("Technical & Professional Skills") to empty string
+  // so individual skills never display an unwanted category header on the resume.
+  useEffect(() => {
+    skills.forEach((cat) => {
+      if (
+        cat.categoryName === 'Technical & Professional Skills' ||
+        cat.categoryName === 'Core Skills & Technical Competencies'
+      ) {
+        updateSkillCategory(cat.id, { categoryName: '' });
+      }
+    });
+  }, [skills, updateSkillCategory]);
+
   const roleTitle = jobTarget?.targetRoleTitle || personal?.jobTitle || 'Professional';
   const jdText = jobTarget?.jobDescriptionText || '';
 
   // Get flat list and lowercase set of all currently existing skills
   const allCurrentSkills = skills.flatMap((cat) => cat.skills);
   const existingSkillsSet = new Set(allCurrentSkills.map((s) => s.toLowerCase().trim()));
+
+  // Custom categories explicitly titled by the user (non-empty)
+  const customCategories = skills.filter(
+    (c) =>
+      c.categoryName &&
+      c.categoryName.trim() !== '' &&
+      c.categoryName !== 'Technical & Professional Skills' &&
+      c.categoryName !== 'Core Skills & Technical Competencies'
+  );
 
   // Role-specific recommendation generator
   const getRoleRecommendedSkills = (): string[] => {
@@ -163,10 +184,10 @@ export const SkillsForm: React.FC = () => {
     if (skillsToInsert.length === 0) return;
 
     if (skills.length === 0) {
-      // Create initial default category if none exists
+      // Create initial standalone category with empty categoryName so no title displays on resume
       const newCategory = {
         id: `skill-${Date.now()}`,
-        categoryName: 'Technical & Professional Skills',
+        categoryName: '',
         skills: skillsToInsert,
       };
       setResumeData((prev) => ({
@@ -178,14 +199,14 @@ export const SkillsForm: React.FC = () => {
       return;
     }
 
-    // Append to primary category (skills[0])
-    const primaryCat = skills[0];
-    const catExistingSet = new Set(primaryCat.skills.map((s) => s.toLowerCase().trim()));
+    // Append to primary standalone category (where categoryName is empty), or skills[0]
+    const standaloneCat = skills.find((c) => !c.categoryName || c.categoryName.trim() === '') || skills[0];
+    const catExistingSet = new Set(standaloneCat.skills.map((s) => s.toLowerCase().trim()));
     const newItems = skillsToInsert.filter((s) => !catExistingSet.has(s.toLowerCase().trim()));
 
     if (newItems.length > 0) {
-      updateSkillCategory(primaryCat.id, {
-        skills: [...primaryCat.skills, ...newItems],
+      updateSkillCategory(standaloneCat.id, {
+        skills: [...standaloneCat.skills, ...newItems],
       });
       toast.success(
         'Skill Added',
@@ -210,7 +231,6 @@ export const SkillsForm: React.FC = () => {
   };
 
   const handleRemoveSkill = (skillNameToRemove: string) => {
-    // Remove from whichever category contains it
     let removed = false;
     skills.forEach((cat) => {
       const idx = cat.skills.findIndex((s) => s.toLowerCase() === skillNameToRemove.toLowerCase());
@@ -226,7 +246,7 @@ export const SkillsForm: React.FC = () => {
     }
   };
 
-  // Category-specific AI helpers
+  // Category-specific helpers
   const handleAddSkillToSpecificCategory = (catId: string, skillName?: string) => {
     const text = (skillName || newSkillInput[catId])?.trim();
     if (!text) return;
@@ -279,6 +299,21 @@ export const SkillsForm: React.FC = () => {
     }
   };
 
+  const handleDeleteCustomCategory = (catId: string, catName: string) => {
+    const toDelete = skills.find((c) => c.id === catId);
+    if (toDelete && toDelete.skills.length > 0) {
+      // Preserve skills into the standalone category so the candidate doesn't lose their data
+      const targetCat = skills.find((c) => c.id !== catId && (!c.categoryName || c.categoryName.trim() === ''));
+      if (targetCat) {
+        updateSkillCategory(targetCat.id, {
+          skills: Array.from(new Set([...targetCat.skills, ...toDelete.skills])),
+        });
+      }
+    }
+    deleteSkillCategory(catId);
+    toast.info('Category Removed', `Deleted category "${catName || 'Custom'}". Skills preserved.`);
+  };
+
   return (
     <div className="p-4 space-y-5 text-slate-200">
       {/* Header with Gemini Status */}
@@ -310,12 +345,12 @@ export const SkillsForm: React.FC = () => {
         </div>
       </div>
 
-      {/* 1. Fast Standalone Skill Input (Unbundled Category Requirement) */}
+      {/* 1. Fast Standalone Skill Input (No Category Prefix on Resume) */}
       <div className="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-4 space-y-3 shadow-md">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold text-white flex items-center gap-2">
             <Tag className="w-3.5 h-3.5 text-blue-400" />
-            <span>Add Skills (Press Enter or comma separated)</span>
+            <span>Add Individual Skills</span>
           </label>
           <span className="text-[11px] text-slate-400">
             {allCurrentSkills.length} active competencies on resume
@@ -334,7 +369,7 @@ export const SkillsForm: React.FC = () => {
                   handleAddStandaloneSkill();
                 }
               }}
-              placeholder="e.g. React, TypeScript, Docker, CI/CD, Agile..."
+              placeholder="Type a skill (e.g. React, TypeScript, Docker) and press Enter..."
               className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 shadow-inner"
             />
           </div>
@@ -396,7 +431,7 @@ export const SkillsForm: React.FC = () => {
                 <span className="text-emerald-300 font-semibold truncate max-w-[200px]">"{roleTitle}"</span>
               </h3>
               <p className="text-[11px] text-slate-400">
-                Click any competency to add directly to your resume.
+                Click any competency to add directly to your resume without category clutter.
               </p>
             </div>
           </div>
@@ -460,7 +495,7 @@ export const SkillsForm: React.FC = () => {
         </div>
       </div>
 
-      {/* 3. Collapsible Custom Categories Organizer (Optional) */}
+      {/* 3. Collapsible Custom Categories Organizer (Optional, tucked below) */}
       <div className="border border-slate-800/80 rounded-2xl bg-slate-950/40 overflow-hidden">
         <button
           type="button"
@@ -474,13 +509,15 @@ export const SkillsForm: React.FC = () => {
                 Organize by Custom Categories (Optional)
               </span>
               <p className="text-[11px] text-slate-400">
-                Group skills into structured blocks (e.g. "Languages", "Cloud & Tools", "Soft Skills").
+                Group skills into structured blocks (e.g. &quot;Languages&quot;, &quot;Cloud Infrastructure&quot;, &quot;Databases&quot;).
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] text-slate-500 font-mono">
-              {skills.length} {skills.length === 1 ? 'Group' : 'Groups'}
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-slate-400">
+              {customCategories.length === 0
+                ? 'Individual Skills Mode'
+                : `${customCategories.length} Custom ${customCategories.length === 1 ? 'Category' : 'Categories'}`}
             </span>
             {showCategoryOrganizer ? (
               <ChevronUp className="w-4 h-4 text-slate-400" />
@@ -492,148 +529,169 @@ export const SkillsForm: React.FC = () => {
 
         {showCategoryOrganizer && (
           <div className="p-4 border-t border-slate-800/80 space-y-4 bg-slate-900/30">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-slate-400">Manage categories and skill groupings:</span>
-              <button
-                type="button"
-                onClick={() => {
-                  addSkillCategory();
-                  toast.success('Category Added', 'Created new skill group.');
-                }}
-                className="flex items-center gap-1 px-3 py-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Add Category Group</span>
-              </button>
-            </div>
-
-            {skills.map((cat) => {
-              const hasSuggestions = (inlineSuggestions[cat.id] || []).length > 0;
-              const isLoadingThis = loadingCategoryAi[cat.id];
-
-              return (
-                <div
-                  key={cat.id}
-                  className="bg-slate-900/80 border border-slate-800/80 rounded-xl p-3.5 space-y-3 shadow-sm"
+            {customCategories.length === 0 ? (
+              <div className="p-6 text-center space-y-3">
+                <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
+                  You are currently using <strong className="text-white">Individual Skills Mode</strong>. All competencies display directly on your resume as a clean, unified list without category headers.
+                </p>
+                <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
+                  Want to group skills under custom titles (e.g. &quot;Programming Languages&quot;, &quot;Cloud &amp; DevOps&quot;)?
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    addSkillCategory('Technical Skills');
+                    toast.success('Category Group Created', 'Created custom category. You can rename it and group skills inside.');
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition shadow-md shadow-blue-600/20 active:scale-95 cursor-pointer"
                 >
-                  <div className="flex items-center justify-between gap-2">
-                    <input
-                      type="text"
-                      value={cat.categoryName}
-                      onChange={(e) => updateSkillCategory(cat.id, { categoryName: e.target.value })}
-                      placeholder="Category Title (e.g. Cloud Infrastructure)"
-                      className="bg-slate-800/80 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex-1 max-w-sm"
-                    />
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        onClick={() => handleFetchCategoryAiSuggestions(cat.id)}
-                        disabled={isLoadingThis}
-                        className="flex items-center gap-1 text-[11px] font-semibold text-purple-400 hover:text-purple-300 bg-purple-950/40 border border-purple-900/50 px-2 py-1 rounded-lg transition disabled:opacity-50 cursor-pointer"
-                        title="AI suggest skills for this specific category"
-                      >
-                        {isLoadingThis ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                        ) : (
-                          <Sparkles className="w-3 h-3 text-purple-400" />
-                        )}
-                        <span>AI Suggest</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          deleteSkillCategory(cat.id);
-                          toast.info('Category Removed', `Deleted ${cat.categoryName}.`);
-                        }}
-                        className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 rounded-lg transition cursor-pointer"
-                        title="Delete Category"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Skills tags in this category */}
-                  <div className="flex flex-wrap gap-1.5 min-h-[28px] p-2 bg-slate-950/50 rounded-xl border border-slate-800/60">
-                    {cat.skills.length === 0 ? (
-                      <span className="text-xs text-slate-500 italic p-1">
-                        No skills in this category. Type below to add.
-                      </span>
-                    ) : (
-                      cat.skills.map((skill, sIdx) => (
-                        <span
-                          key={sIdx}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-200 border border-slate-700/80"
-                        >
-                          <span>{skill}</span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              updateSkillCategory(cat.id, {
-                                skills: cat.skills.filter((_, i) => i !== sIdx),
-                              });
-                            }}
-                            className="text-slate-400 hover:text-rose-400 transition"
-                          >
-                            <X className="w-3 h-3" />
-                          </button>
-                        </span>
-                      ))
-                    )}
-                  </div>
-
-                  {/* Add skill specifically to this category */}
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={newSkillInput[cat.id] || ''}
-                      onChange={(e) => setNewSkillInput({ ...newSkillInput, [cat.id]: e.target.value })}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          handleAddSkillToSpecificCategory(cat.id);
-                        }
-                      }}
-                      placeholder={`Add skill to "${cat.categoryName}"...`}
-                      className="flex-1 bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleAddSkillToSpecificCategory(cat.id)}
-                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl transition cursor-pointer"
-                    >
-                      Add
-                    </button>
-                  </div>
-
-                  {/* Category-specific AI Inline Suggestions */}
-                  {hasSuggestions && (
-                    <div className="p-2.5 bg-purple-950/20 border border-purple-900/40 rounded-xl space-y-1.5 animate-in fade-in duration-200">
-                      <div className="flex items-center justify-between text-[11px]">
-                        <span className="flex items-center gap-1.5 font-semibold text-purple-300">
-                          <Bot className="w-3.5 h-3.5 text-purple-400" />
-                          <span>AI Suggestions for "{cat.categoryName}"</span>
-                        </span>
-                        <span className="text-[10px] text-slate-500">Click to add</span>
-                      </div>
-                      <div className="flex flex-wrap gap-1.5 pt-0.5">
-                        {inlineSuggestions[cat.id].map((suggested, idx) => (
-                          <button
-                            key={idx}
-                            type="button"
-                            onClick={() => handleAddSkillToSpecificCategory(cat.id, suggested)}
-                            className="group inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-900/40 hover:bg-purple-800/60 text-purple-200 border border-purple-800/60 text-xs font-medium transition active:scale-95 cursor-pointer"
-                          >
-                            <Plus className="w-3 h-3 text-purple-400 group-hover:scale-125 transition-transform" />
-                            <span>{suggested}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Create Custom Category Group</span>
+                </button>
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-slate-400">Custom Category Groups:</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      addSkillCategory('Custom Category');
+                      toast.success('Category Added', 'Created new skill group.');
+                    }}
+                    className="flex items-center gap-1 px-3 py-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add Another Category</span>
+                  </button>
                 </div>
-              );
-            })}
+
+                {customCategories.map((cat) => {
+                  const hasSuggestions = (inlineSuggestions[cat.id] || []).length > 0;
+                  const isLoadingThis = loadingCategoryAi[cat.id];
+
+                  return (
+                    <div
+                      key={cat.id}
+                      className="bg-slate-900/80 border border-slate-800/80 rounded-xl p-3.5 space-y-3 shadow-sm"
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <input
+                          type="text"
+                          value={cat.categoryName}
+                          onChange={(e) => updateSkillCategory(cat.id, { categoryName: e.target.value })}
+                          placeholder="Category Title (e.g. Cloud Infrastructure)"
+                          className="bg-slate-800/80 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex-1 max-w-sm"
+                        />
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => handleFetchCategoryAiSuggestions(cat.id)}
+                            disabled={isLoadingThis}
+                            className="flex items-center gap-1 text-[11px] font-semibold text-purple-400 hover:text-purple-300 bg-purple-950/40 border border-purple-900/50 px-2 py-1 rounded-lg transition disabled:opacity-50 cursor-pointer"
+                            title="AI suggest skills for this specific category"
+                          >
+                            {isLoadingThis ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <Sparkles className="w-3 h-3 text-purple-400" />
+                            )}
+                            <span>AI Suggest</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteCustomCategory(cat.id, cat.categoryName)}
+                            className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 rounded-lg transition cursor-pointer"
+                            title="Delete Category"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Skills tags in this category */}
+                      <div className="flex flex-wrap gap-1.5 min-h-[28px] p-2 bg-slate-950/50 rounded-xl border border-slate-800/60">
+                        {cat.skills.length === 0 ? (
+                          <span className="text-xs text-slate-500 italic p-1">
+                            No skills in this category. Type below to add.
+                          </span>
+                        ) : (
+                          cat.skills.map((skill, sIdx) => (
+                            <span
+                              key={sIdx}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-200 border border-slate-700/80"
+                            >
+                              <span>{skill}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  updateSkillCategory(cat.id, {
+                                    skills: cat.skills.filter((_, i) => i !== sIdx),
+                                  });
+                                }}
+                                className="text-slate-400 hover:text-rose-400 transition cursor-pointer"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </span>
+                          ))
+                        )}
+                      </div>
+
+                      {/* Add skill specifically to this category */}
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={newSkillInput[cat.id] || ''}
+                          onChange={(e) => setNewSkillInput({ ...newSkillInput, [cat.id]: e.target.value })}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddSkillToSpecificCategory(cat.id);
+                            }
+                          }}
+                          placeholder={`Add skill to "${cat.categoryName}"...`}
+                          className="flex-1 bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleAddSkillToSpecificCategory(cat.id)}
+                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl transition cursor-pointer"
+                        >
+                          Add
+                        </button>
+                      </div>
+
+                      {/* Category-specific AI Inline Suggestions */}
+                      {hasSuggestions && (
+                        <div className="p-2.5 bg-purple-950/20 border border-purple-900/40 rounded-xl space-y-1.5 animate-in fade-in duration-200">
+                          <div className="flex items-center justify-between text-[11px]">
+                            <span className="flex items-center gap-1.5 font-semibold text-purple-300">
+                              <Bot className="w-3.5 h-3.5 text-purple-400" />
+                              <span>AI Suggestions for &quot;{cat.categoryName}&quot;</span>
+                            </span>
+                            <span className="text-[10px] text-slate-500">Click to add</span>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5 pt-0.5">
+                            {inlineSuggestions[cat.id].map((suggested, idx) => (
+                              <button
+                                key={idx}
+                                type="button"
+                                onClick={() => handleAddSkillToSpecificCategory(cat.id, suggested)}
+                                className="group inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-900/40 hover:bg-purple-800/60 text-purple-200 border border-purple-800/60 text-xs font-medium transition active:scale-95 cursor-pointer"
+                              >
+                                <Plus className="w-3 h-3 text-purple-400 group-hover:scale-125 transition-transform" />
+                                <span>{suggested}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </>
+            )}
           </div>
         )}
       </div>

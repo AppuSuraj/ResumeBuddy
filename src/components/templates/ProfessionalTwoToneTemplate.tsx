@@ -43,18 +43,28 @@ export const ProfessionalTwoToneTemplate: React.FC<{ data: ResumeData }> = ({ da
           <div className="mt-4 border-t border-white/10 pt-6">
             <h2 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Skills & Expertise</h2>
             <div className="space-y-4 text-xs">
-              {skills.map((cat) => (
-                <div key={cat.id}>
-                  <div className="font-bold text-slate-200 mb-1.5">{cat.categoryName}</div>
-                  <div className="flex flex-wrap gap-1.5">
-                    {cat.skills.map((s, idx) => (
-                      <span key={idx} className="bg-white/10 px-2 py-0.5 rounded text-slate-100">
-                        {s}
-                      </span>
-                    ))}
+              {skills.map((cat) => {
+                const showCategory = Boolean(
+                  cat.categoryName &&
+                  cat.categoryName.trim() !== '' &&
+                  cat.categoryName !== 'Technical & Professional Skills' &&
+                  cat.categoryName !== 'Core Skills & Technical Competencies'
+                );
+                return (
+                  <div key={cat.id}>
+                    {showCategory && (
+                      <div className="font-bold text-slate-200 mb-1.5">{cat.categoryName}</div>
+                    )}
+                    <div className="flex flex-wrap gap-1.5">
+                      {cat.skills.map((s, idx) => (
+                        <span key={idx} className="bg-white/10 px-2 py-0.5 rounded text-slate-100">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

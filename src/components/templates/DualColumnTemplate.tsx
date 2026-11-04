@@ -44,18 +44,28 @@ export const DualColumnTemplate: React.FC<{ data: ResumeData }> = ({ data }) => 
             <div className="mb-6 border-t border-slate-800 pt-4">
               <h2 className="text-[10px] font-bold uppercase tracking-widest text-teal-400 mb-3">Skills</h2>
               <div className="space-y-3">
-                {skills.map((cat) => (
-                  <div key={cat.id}>
-                    <div className="text-xs font-bold text-slate-200 mb-1">{cat.categoryName}</div>
-                    <div className="flex flex-wrap gap-1">
-                      {cat.skills.map((s, idx) => (
-                        <span key={idx} className="text-[10px] bg-slate-800 text-teal-300 px-1.5 py-0.5 rounded border border-slate-700">
-                          {s}
-                        </span>
-                      ))}
+                {skills.map((cat) => {
+                  const showCategory = Boolean(
+                    cat.categoryName &&
+                    cat.categoryName.trim() !== '' &&
+                    cat.categoryName !== 'Technical & Professional Skills' &&
+                    cat.categoryName !== 'Core Skills & Technical Competencies'
+                  );
+                  return (
+                    <div key={cat.id}>
+                      {showCategory && (
+                        <div className="text-xs font-bold text-slate-200 mb-1">{cat.categoryName}</div>
+                      )}
+                      <div className="flex flex-wrap gap-1">
+                        {cat.skills.map((s, idx) => (
+                          <span key={idx} className="text-[10px] bg-slate-800 text-teal-300 px-1.5 py-0.5 rounded border border-slate-700">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}

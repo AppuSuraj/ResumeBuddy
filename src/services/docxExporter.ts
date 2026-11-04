@@ -276,24 +276,37 @@ export async function exportResumeToDocx(data: ResumeData): Promise<void> {
     docParagraphs.push(createSectionHeading('Skills & Technical Expertise'));
 
     skills.forEach((cat) => {
+      const showCategory = Boolean(
+        cat.categoryName &&
+        cat.categoryName.trim() !== '' &&
+        cat.categoryName !== 'Technical & Professional Skills' &&
+        cat.categoryName !== 'Core Skills & Technical Competencies'
+      );
+      const textRuns: TextRun[] = [];
+      if (showCategory) {
+        textRuns.push(
+          new TextRun({
+            text: `${cat.categoryName}: `,
+            bold: true,
+            size: 20,
+            font: 'Arial',
+            color: '111111',
+          })
+        );
+      }
+      textRuns.push(
+        new TextRun({
+          text: cat.skills.join(', '),
+          size: 20,
+          font: 'Arial',
+          color: '333333',
+        })
+      );
+
       docParagraphs.push(
         new Paragraph({
           spacing: { after: 80 },
-          children: [
-            new TextRun({
-              text: `${cat.categoryName}: `,
-              bold: true,
-              size: 20,
-              font: 'Arial',
-              color: '111111',
-            }),
-            new TextRun({
-              text: cat.skills.join(', '),
-              size: 20,
-              font: 'Arial',
-              color: '333333',
-            }),
-          ],
+          children: textRuns,
         })
       );
     });

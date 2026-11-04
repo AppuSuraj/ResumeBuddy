@@ -57,7 +57,7 @@ interface ResumeContextType {
   deleteEducationItem: (id: string) => void;
 
   updateSkillCategory: (id: string, cat: Partial<SkillCategory>) => void;
-  addSkillCategory: () => void;
+  addSkillCategory: (initialName?: string) => void;
   deleteSkillCategory: (id: string) => void;
 
   updateProjectItem: (id: string, proj: Partial<Project>) => void;
@@ -652,10 +652,10 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }));
   };
 
-  const addSkillCategory = () => {
+  const addSkillCategory = (initialName: string = '') => {
     const newItem: SkillCategory = {
       id: `skill-${Date.now()}`,
-      categoryName: 'Technical & Professional Skills',
+      categoryName: initialName,
       skills: [],
     };
     setResumeData((prev) => ({

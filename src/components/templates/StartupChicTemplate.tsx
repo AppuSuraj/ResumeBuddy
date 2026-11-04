@@ -71,21 +71,31 @@ export const StartupChicTemplate: React.FC<{ data: ResumeData }> = ({ data }) =>
         <section className="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm">
           <h2 className="text-xs font-black uppercase tracking-wider text-slate-400 mb-3">Skills</h2>
           <div className="space-y-3">
-            {skills.map((cat) => (
-              <div key={cat.id}>
-                <div className="text-xs font-bold text-slate-800 mb-1.5">{cat.categoryName}</div>
-                <div className="flex flex-wrap gap-1.5">
-                  {cat.skills.map((s, idx) => (
-                    <span
-                      key={idx}
-                      className="text-xs font-semibold px-2.5 py-1 rounded-xl bg-slate-100 text-slate-800 hover:bg-slate-200"
-                    >
-                      {s}
-                    </span>
-                  ))}
+            {skills.map((cat) => {
+              const showCategory = Boolean(
+                cat.categoryName &&
+                cat.categoryName.trim() !== '' &&
+                cat.categoryName !== 'Technical & Professional Skills' &&
+                cat.categoryName !== 'Core Skills & Technical Competencies'
+              );
+              return (
+                <div key={cat.id}>
+                  {showCategory && (
+                    <div className="text-xs font-bold text-slate-800 mb-1.5">{cat.categoryName}</div>
+                  )}
+                  <div className="flex flex-wrap gap-1.5">
+                    {cat.skills.map((s, idx) => (
+                      <span
+                        key={idx}
+                        className="text-xs font-semibold px-2.5 py-1 rounded-xl bg-slate-100 text-slate-800 hover:bg-slate-200"
+                      >
+                        {s}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}

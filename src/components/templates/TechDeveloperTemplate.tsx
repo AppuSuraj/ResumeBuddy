@@ -50,21 +50,31 @@ export const TechDeveloperTemplate: React.FC<{ data: ResumeData }> = ({ data }) 
         <section className="mb-6 font-sans">
           <div className="text-xs font-mono text-slate-400 mb-2">/** TECHNICAL_STACK **/</div>
           <div className="space-y-2">
-            {skills.map((cat) => (
-              <div key={cat.id} className="bg-slate-800/40 p-2.5 rounded border border-slate-800">
-                <span className="text-xs font-mono font-bold text-slate-300 mr-2">{cat.categoryName}:</span>
-                <div className="inline-flex flex-wrap gap-1.5 mt-1">
-                  {cat.skills.map((sk, idx) => (
-                    <span
-                      key={idx}
-                      className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-sky-300 border border-sky-900/50"
-                    >
-                      {sk}
-                    </span>
-                  ))}
+            {skills.map((cat) => {
+              const showCategory = Boolean(
+                cat.categoryName &&
+                cat.categoryName.trim() !== '' &&
+                cat.categoryName !== 'Technical & Professional Skills' &&
+                cat.categoryName !== 'Core Skills & Technical Competencies'
+              );
+              return (
+                <div key={cat.id} className="bg-slate-800/40 p-2.5 rounded border border-slate-800">
+                  {showCategory && (
+                    <span className="text-xs font-mono font-bold text-slate-300 mr-2">{cat.categoryName}:</span>
+                  )}
+                  <div className="inline-flex flex-wrap gap-1.5 mt-1">
+                    {cat.skills.map((sk, idx) => (
+                      <span
+                        key={idx}
+                        className="text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800 text-sky-300 border border-sky-900/50"
+                      >
+                        {sk}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}

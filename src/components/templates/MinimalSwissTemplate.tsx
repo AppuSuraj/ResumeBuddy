@@ -59,12 +59,22 @@ export const MinimalSwissTemplate: React.FC<{ data: ResumeData }> = ({ data }) =
         <section className="grid grid-cols-4 gap-4 mb-8">
           <h2 className="text-xs font-black uppercase tracking-widest col-span-1">SKILLS</h2>
           <div className="col-span-3 space-y-1.5 text-xs font-medium">
-            {skills.map((cat) => (
-              <div key={cat.id}>
-                <span className="font-bold">{cat.categoryName}: </span>
-                <span className="text-stone-700">{cat.skills.join(' / ')}</span>
-              </div>
-            ))}
+            {skills.map((cat) => {
+              const showCategory = Boolean(
+                cat.categoryName &&
+                cat.categoryName.trim() !== '' &&
+                cat.categoryName !== 'Technical & Professional Skills' &&
+                cat.categoryName !== 'Core Skills & Technical Competencies'
+              );
+              return (
+                <div key={cat.id}>
+                  {showCategory && (
+                    <span className="font-bold">{cat.categoryName}: </span>
+                  )}
+                  <span className="text-stone-700">{cat.skills.join(' / ')}</span>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}

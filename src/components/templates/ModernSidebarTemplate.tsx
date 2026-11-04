@@ -55,18 +55,28 @@ export const ModernSidebarTemplate: React.FC<{ data: ResumeData }> = ({ data }) 
           <div className="mt-4 border-t border-slate-300 pt-6">
             <h2 className="text-[10px] font-extrabold uppercase tracking-widest mb-3" style={{ color: primaryColor }}>Skills</h2>
             <div className="space-y-4 text-xs">
-              {skills.map((cat) => (
-                <div key={cat.id}>
-                  <div className="font-bold text-slate-700 mb-1.5">{cat.categoryName}</div>
-                  <div className="flex flex-col gap-1 text-slate-600">
-                    {cat.skills.map((s, idx) => (
-                      <span key={idx} className="flex items-center gap-2">
-                        <span className="w-1 h-1 rounded-full bg-slate-400"></span>{s}
-                      </span>
-                    ))}
+              {skills.map((cat) => {
+                const showCategory = Boolean(
+                  cat.categoryName &&
+                  cat.categoryName.trim() !== '' &&
+                  cat.categoryName !== 'Technical & Professional Skills' &&
+                  cat.categoryName !== 'Core Skills & Technical Competencies'
+                );
+                return (
+                  <div key={cat.id}>
+                    {showCategory && (
+                      <div className="font-bold text-slate-700 mb-1.5">{cat.categoryName}</div>
+                    )}
+                    <div className="flex flex-col gap-1 text-slate-600">
+                      {cat.skills.map((s, idx) => (
+                        <span key={idx} className="flex items-center gap-2">
+                          <span className="w-1 h-1 rounded-full bg-slate-400"></span>{s}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

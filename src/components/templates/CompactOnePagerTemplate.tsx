@@ -65,12 +65,22 @@ export const CompactOnePagerTemplate: React.FC<{ data: ResumeData }> = ({ data }
             Skills & Expertise
           </h2>
           <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-[11px]">
-            {skills.map((cat) => (
-              <div key={cat.id}>
-                <span className="font-bold text-slate-800">{cat.categoryName}: </span>
-                <span className="text-slate-600">{cat.skills.join(', ')}</span>
-              </div>
-            ))}
+            {skills.map((cat) => {
+              const showCategory = Boolean(
+                cat.categoryName &&
+                cat.categoryName.trim() !== '' &&
+                cat.categoryName !== 'Technical & Professional Skills' &&
+                cat.categoryName !== 'Core Skills & Technical Competencies'
+              );
+              return (
+                <div key={cat.id}>
+                  {showCategory && (
+                    <span className="font-bold text-slate-800">{cat.categoryName}: </span>
+                  )}
+                  <span className="text-slate-600">{cat.skills.join(', ')}</span>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}

@@ -64,12 +64,22 @@ export const ElegantCorporateTemplate: React.FC<{ data: ResumeData }> = ({ data 
             Core Competencies
           </h2>
           <div className="grid grid-cols-2 gap-2 text-xs">
-            {skills.map((cat) => (
-              <div key={cat.id}>
-                <span className="font-bold text-slate-900">{cat.categoryName}: </span>
-                <span className="text-slate-700">{cat.skills.join(', ')}</span>
-              </div>
-            ))}
+            {skills.map((cat) => {
+              const showCategory = Boolean(
+                cat.categoryName &&
+                cat.categoryName.trim() !== '' &&
+                cat.categoryName !== 'Technical & Professional Skills' &&
+                cat.categoryName !== 'Core Skills & Technical Competencies'
+              );
+              return (
+                <div key={cat.id}>
+                  {showCategory && (
+                    <span className="font-bold text-slate-900">{cat.categoryName}: </span>
+                  )}
+                  <span className="text-slate-700">{cat.skills.join(', ')}</span>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}

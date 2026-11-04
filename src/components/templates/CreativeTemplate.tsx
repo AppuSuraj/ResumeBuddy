@@ -84,18 +84,28 @@ export const CreativeTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
               Skills & Expertise
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {skills.map((cat) => (
-                <div key={cat.id} className="bg-slate-50 p-3 rounded-lg border border-slate-100">
-                  <h3 className="text-xs font-bold text-slate-800 mb-1.5">{cat.categoryName}</h3>
-                  <div className="flex flex-wrap gap-1">
-                    {cat.skills.map((s, i) => (
-                      <span key={i} className="text-[11px] bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-700">
-                        {s}
-                      </span>
-                    ))}
+              {skills.map((cat) => {
+                const showCategory = Boolean(
+                  cat.categoryName &&
+                  cat.categoryName.trim() !== '' &&
+                  cat.categoryName !== 'Technical & Professional Skills' &&
+                  cat.categoryName !== 'Core Skills & Technical Competencies'
+                );
+                return (
+                  <div key={cat.id} className="bg-slate-50 p-3 rounded-lg border border-slate-100">
+                    {showCategory && (
+                      <h3 className="text-xs font-bold text-slate-800 mb-1.5">{cat.categoryName}</h3>
+                    )}
+                    <div className="flex flex-wrap gap-1">
+                      {cat.skills.map((s, i) => (
+                        <span key={i} className="text-[11px] bg-white px-2 py-0.5 rounded border border-slate-200 text-slate-700">
+                          {s}
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
         )}

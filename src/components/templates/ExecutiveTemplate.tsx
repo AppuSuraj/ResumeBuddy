@@ -96,12 +96,22 @@ export const ExecutiveTemplate: React.FC<{ data: ResumeData }> = ({ data }) => {
             Core Competencies & Capabilities
           </h2>
           <div className="grid grid-cols-2 gap-2 text-xs font-sans">
-            {skills.map((cat) => (
-              <div key={cat.id}>
-                <span className="font-bold text-stone-900">{cat.categoryName}: </span>
-                <span className="text-stone-700">{cat.skills.join(', ')}</span>
-              </div>
-            ))}
+            {skills.map((cat) => {
+              const showCategory = Boolean(
+                cat.categoryName &&
+                cat.categoryName.trim() !== '' &&
+                cat.categoryName !== 'Technical & Professional Skills' &&
+                cat.categoryName !== 'Core Skills & Technical Competencies'
+              );
+              return (
+                <div key={cat.id}>
+                  {showCategory && (
+                    <span className="font-bold text-stone-900">{cat.categoryName}: </span>
+                  )}
+                  <span className="text-stone-700">{cat.skills.join(', ')}</span>
+                </div>
+              );
+            })}
           </div>
         </section>
       )}

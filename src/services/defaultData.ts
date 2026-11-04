@@ -178,7 +178,7 @@ export const createBlankResume = (
     skills: [
       {
         id: `skills-${Date.now()}`,
-        categoryName: 'Technical & Professional Skills',
+        categoryName: '',
         skills: [],
       },
     ],
