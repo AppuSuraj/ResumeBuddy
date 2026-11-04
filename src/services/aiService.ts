@@ -698,7 +698,8 @@ export async function generateAiBullets(
   roleTitle: string,
   company: string,
   targetJd?: string,
-  currentText?: string
+  currentText?: string,
+  mode: 'contextual' | 'generalized' = 'contextual'
 ): Promise<string[]> {
   const apiKey = getStoredApiKey();
 
@@ -708,41 +709,58 @@ export async function generateAiBullets(
       const ai = new GoogleGenAI({ apiKey });
       let prompt = '';
 
-      if (currentText && currentText.trim().length > 5) {
-        prompt = `You are an expert executive resume writer and ATS optimization expert.
-The user is writing a resume bullet point for a "${roleTitle || 'Professional'}" role at "${company || 'Company'}".
-Draft input text provided by user: "${currentText}"
-${targetJd ? `Target Job Description Context:\n${targetJd}` : ''}
+      if (mode === 'contextual') {
+        prompt = `Act as an executive ATS resume coach.
+Candidate Role: "${roleTitle || 'Professional'}" at "${company || 'Company'}".
+${targetJd ? `Target Job Context: ${targetJd.slice(0, 450)}` : ''}
+${currentText && currentText.trim().length > 3 ? `Draft bullet to polish: "${currentText}"` : ''}
 
-CRITICAL RULES:
-1. DO NOT wrap or concatenate the input text inside template phrases like "Executed key initiatives addressing " + draft.
-2. Completely rephrase and elevate the sentence into 4 distinct, professional resume bullet points.
-3. Fix all grammar errors, replacing weak verbs (used, assisted, worked) with strong past-tense action verbs (Administered, Diagnosed, Enforced, Streamlined, Spearheaded, Engineered).
-4. Preserve all specific technologies and tools mentioned (e.g. MFA, RSA, SCCM, Active Directory, React, etc.).
-5. Include realistic metrics (percentages, ticket resolution SLAs, endpoint counts).
-6. Ensure clean punctuation without duplicate periods or commas (never output "troubleshoot.,").
-
-Return ONLY the 4 bullet points, one per line, with no bullet symbols or introductory text.`;
+Generate 4 high-impact accomplishment bullet points tailored specifically to this role and target job requirements.
+Rules:
+1. Every bullet MUST follow Google's X-Y-Z formula: "Accomplished [X], as measured by [Y], by doing [Z]".
+2. Begin with strong past-tense action verbs (e.g., Engineered, Spearheaded, Accelerated, Optimized, Orchestrated).
+3. Include realistic, quantifiable metrics (percentages, latency, throughput, dollar amounts, SLA improvements).
+4. Preserve and emphasize relevant technical stack keywords matching the role and JD.
+5. Return strictly a JSON array of 4 strings (e.g. ["Accomplished X...", "Accelerated Y..."]). No markdown ticks, no preamble.`;
       } else {
-        prompt = `You are an expert resume writer and ATS optimization specialist.
-Generate 4 highly impactful, achievement-oriented, quantifiable resume bullet points for a "${roleTitle}" role at "${company}".
-${targetJd ? `Target Job Description:\n${targetJd}` : ''}
-Each bullet point MUST start with a strong action verb and include realistic metrics/percentages.
-Return ONLY the 4 bullet points separated by newlines, with no numbering, prefixes, or conversational text.`;
+        prompt = `Act as an executive ATS resume coach.
+Candidate Role: "${roleTitle || 'Professional'}" at "${company || 'Company'}".
+${currentText && currentText.trim().length > 3 ? `Draft bullet to polish: "${currentText}"` : ''}
+
+Generate 4 universally accepted, high-impact bullet points for this job title covering core pillars (agile sprint execution, cross-functional collaboration, system reliability, process improvement).
+Rules:
+1. Every bullet MUST follow Google's X-Y-Z formula: "Accomplished [X], as measured by [Y], by doing [Z]".
+2. Begin with strong past-tense action verbs (e.g., Spearheaded, Delivered, Championed, Streamlined).
+3. Include realistic quantifiable metrics (percentages, team sizes, project turnaround timelines).
+4. Return strictly a JSON array of 4 strings. No markdown ticks, no preamble.`;
       }
 
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash',
         contents: prompt,
+        config: {
+          responseMimeType: 'application/json',
+        },
       });
 
       if (response.text) {
-        const bullets = response.text
-          .split('\n')
-          .map((line) => line.replace(/^[\s•\-\*\d\.]+\s*/, '').trim())
-          .filter((line) => line.length > 10);
-        if (bullets.length >= 2) {
-          return bullets.slice(0, 4);
+        try {
+          const cleaned = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+          const parsed = JSON.parse(cleaned);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            const valid = parsed.map((s) => String(s).trim()).filter((s) => s.length > 10);
+            if (valid.length >= 2) {
+              return valid.slice(0, 4);
+            }
+          }
+        } catch {
+          const bullets = response.text
+            .split('\n')
+            .map((line) => line.replace(/^[\s•\-\*\d\.\[\]"']+\s*/, '').replace(/["'],?$/, '').trim())
+            .filter((line) => line.length > 10);
+          if (bullets.length >= 2) {
+            return bullets.slice(0, 4);
+          }
         }
       }
     } catch (err) {
@@ -757,40 +775,57 @@ Return ONLY the 4 bullet points separated by newlines, with no numbering, prefix
 
   const roleLower = roleTitle.toLowerCase();
 
+  if (mode === 'generalized') {
+    return [
+      `Delivered 6 critical product milestones ahead of schedule by leading agile sprint cadences across cross-functional engineering and design teams.`,
+      `Improved cross-departmental project turnaround time by 32% by establishing streamlined communication channels and weekly sync retrospectives.`,
+      `Championed operational best practices and peer review workflows, reducing post-launch defects by 45% across recurring delivery cycles.`,
+      `Mentored 4 junior and mid-level team members, accelerating onboarding velocity and increasing team output efficiency by 25%.`,
+    ];
+  }
+
+  // Contextual offline role fallbacks
   if (roleLower.includes('engineer') || roleLower.includes('developer') || roleLower.includes('tech') || roleLower.includes('frontend') || roleLower.includes('backend') || roleLower.includes('full stack')) {
     return [
-      `Architected and deployed scalable cloud infrastructure for ${roleTitle} at ${company}, reducing deployment latency by 35%.`,
-      `Engineered robust frontend/backend microservices, supporting over 250,000 daily active users with 99.9% uptime.`,
-      `Led cross-functional sprint planning, reduced code bug reports by 40% through test-driven development (TDD) and CI/CD pipelines.`,
-      `Optimized database queries and API response times, resulting in a 50% performance improvement during peak traffic hours.`,
+      `Architected and deployed scalable cloud microservices for ${roleTitle} at ${company}, reducing deployment latency by 35% across production environments.`,
+      `Engineered high-throughput API endpoints supporting over 250,000 daily active users with 99.9% uptime SLA.`,
+      `Reduced production bug incident frequency by 40% by implementing automated test-driven development (TDD) and CI/CD pipelines.`,
+      `Optimized database indexing and queries, achieving a 50% performance improvement in API response times during peak traffic.`,
     ];
   } else if (roleLower.includes('manager') || roleLower.includes('lead') || roleLower.includes('product') || roleLower.includes('project')) {
     return [
       `Spearheaded product roadmap and feature delivery for ${company}, increasing customer retention rates by 28% year-over-year.`,
-      `Managed an agile cross-functional team of 12+ engineers and designers, delivering 4 key releases on time and under budget.`,
-      `Defined key metrics (KPIs/OKRs) and conducted data-driven user research, resulting in a 35% growth in monthly user engagement.`,
-      `Streamlined team workflows and cross-departmental alignment, cutting overall project delivery cycles by 3 weeks.`,
+      `Managed an agile cross-functional team of 12+ engineers and designers, delivering 4 key enterprise releases on time and within budget.`,
+      `Defined core product KPIs and conducted data-driven user research, resulting in a 35% growth in monthly user engagement.`,
+      `Streamlined cross-team dependency mapping, cutting overall release cycle turnaround time by 3 weeks.`,
     ];
   } else if (roleLower.includes('data') || roleLower.includes('analyst') || roleLower.includes('science')) {
     return [
-      `Built automated data pipelines and predictive ML models at ${company}, providing strategic insights for executive stakeholders.`,
-      `Designed SQL & Tableau dashboards visualizing key business operational metrics, identifying $450K in annual cost savings.`,
-      `Performed complex exploratory data analysis across 10M+ records, boosting conversion tracking accuracy by 30%.`,
-      `Collaborated with product teams to design and evaluate A/B experiments, optimizing user funnel conversion by 18%.`,
+      `Built automated data ingestion pipelines and predictive models at ${company}, driving strategic decisions for executive stakeholders.`,
+      `Designed interactive executive dashboards visualizing business operational metrics, identifying $450K in annual cost savings.`,
+      `Executed exploratory data analysis across 10M+ transaction records, boosting churn prediction accuracy by 30%.`,
+      `Collaborated with growth teams to design and evaluate multi-arm bandit experiments, optimizing conversion funnel efficiency by 18%.`,
+    ];
+  } else if (roleLower.includes('support') || roleLower.includes('it') || roleLower.includes('desk') || roleLower.includes('admin') || roleLower.includes('specialist')) {
+    return [
+      `Resolved 1,200+ Tier-2/3 technical support tickets with a 98% first-touch resolution rate by optimizing ServiceNow troubleshooting runbooks.`,
+      `Administered Active Directory, Okta MFA, and endpoint configuration policies for 850+ enterprise users with zero security compliance lapses.`,
+      `Reduced average hardware and software ticket resolution turnaround time by 35% through automated PowerShell diagnostic scripts.`,
+      `Provisioned and maintained cloud-managed endpoints and VPN tunnels across hybrid remote workforces, achieving 99.9% availability.`,
     ];
   } else if (roleLower.includes('design') || roleLower.includes('ux') || roleLower.includes('ui') || roleLower.includes('creative')) {
     return [
-      `Created comprehensive design systems and user journey flows for ${company}, reducing UI component creation time by 45%.`,
-      `Conducted user interviews and usability testing with 50+ participants, resolving core checkout friction points.`,
-      `Redesigned core product web & mobile interfaces, driving a 24% increase in user sign-ups and NPS score.`,
-      `Partnered closely with engineering teams to ensure pixel-perfect design implementation across modern responsive breakpoints.`,
+      `Created comprehensive multi-brand design systems for ${company}, reducing designer-to-developer handoff time by 45%.`,
+      `Conducted user interviews and usability testing with 50+ participants, resolving core checkout funnel friction points.`,
+      `Redesigned core product web & mobile interfaces, driving a 24% increase in user sign-ups and customer NPS score.`,
+      `Partnered closely with engineering teams to ensure pixel-perfect design implementation across responsive breakpoints.`,
     ];
   } else {
     return [
-      `Driven performance in ${roleTitle} position at ${company}, consistently exceeding quarterly targets by 25%.`,
-      `Streamlined operational processes and team collaboration, saving 15+ team hours per week.`,
-      `Implemented data-backed initiatives that improved customer satisfaction ratings from 82% to 96%.`,
-      `Led key cross-functional projects, managing budgets, timelines, and stakeholder communications seamlessly.`,
+      `Exceeded quarterly performance targets by 25% at ${company} by executing structured operational initiatives.`,
+      `Streamlined recurring workflows and cross-team communications, reclaiming 15+ productive team hours per week.`,
+      `Implemented data-backed quality standards that elevated customer satisfaction ratings from 82% to 96%.`,
+      `Orchestrated high-impact cross-functional deliverables, managing budgets, milestones, and executive communications seamlessly.`,
     ];
   }
 }

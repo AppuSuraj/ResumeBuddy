@@ -27,11 +27,14 @@ export const ExperienceForm: React.FC = () => {
   const [generatedBullets, setGeneratedBullets] = useState<string[]>([]);
   const [selectedBullets, setSelectedBullets] = useState<string[]>([]);
   const [currentDraftText, setCurrentDraftText] = useState<string>('');
+  const [bulletMode, setBulletMode] = useState<'contextual' | 'generalized'>('contextual');
 
-  const openAiBulletsModal = async (exp: WorkExperience, currentText?: string, bulletIndex?: number) => {
-    setActiveAiExpId(exp.id);
-    setActiveBulletIndex(bulletIndex ?? null);
-    setCurrentDraftText(currentText || '');
+  const executeBulletGeneration = async (
+    exp: WorkExperience,
+    draftText?: string,
+    mode: 'contextual' | 'generalized' = 'contextual',
+    targetBulletIndex?: number | null
+  ) => {
     setIsGeneratingBullets(true);
     setGeneratedBullets([]);
     setSelectedBullets([]);
@@ -41,10 +44,11 @@ export const ExperienceForm: React.FC = () => {
         exp.jobTitle || 'Role',
         exp.company || 'Company',
         jobTarget.jobDescriptionText,
-        currentText
+        draftText,
+        mode
       );
       setGeneratedBullets(bullets);
-      if (bulletIndex !== undefined && bulletIndex !== null && bullets.length > 0) {
+      if (targetBulletIndex !== undefined && targetBulletIndex !== null && bullets.length > 0) {
         setSelectedBullets([bullets[0]]);
       } else {
         setSelectedBullets(bullets);
@@ -57,31 +61,75 @@ export const ExperienceForm: React.FC = () => {
     }
   };
 
-  const handleApplySelectedBullets = (expId: string) => {
-    const exp = experience.find((e) => e.id === expId);
-    if (exp && selectedBullets.length > 0) {
-      if (activeBulletIndex !== null) {
-        const bank = (exp.bulletBank && exp.bulletBank.length > 0)
-          ? [...exp.bulletBank]
-          : exp.highlights.map((h, i) => ({ id: `b-${i}`, text: h, enabled: true }));
+  const openAiBulletsModal = async (
+    exp: WorkExperience,
+    currentText?: string,
+    bulletIndex?: number,
+    initialMode?: 'contextual' | 'generalized'
+  ) => {
+    const chosenMode = initialMode || (jobTarget.jobDescriptionText?.trim() ? 'contextual' : 'generalized');
+    setActiveAiExpId(exp.id);
+    setActiveBulletIndex(bulletIndex ?? null);
+    setCurrentDraftText(currentText || '');
+    setBulletMode(chosenMode);
 
-        if (activeBulletIndex < bank.length) {
-          bank[activeBulletIndex] = { ...bank[activeBulletIndex], text: selectedBullets[0] };
-        }
-        if (selectedBullets.length > 1) {
-          selectedBullets.slice(1).forEach((b) => {
-            bank.push({ id: `b-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`, text: b, enabled: true });
-          });
-        }
-        updateExperienceItem(expId, { bulletBank: bank });
-        toast.success('Bullet Enhanced', 'Updated achievement with AI-crafted metric bullet.');
-      } else {
-        selectedBullets.forEach((bullet) => {
-          addBulletToBank(expId, bullet);
-        });
-        toast.success('Bullets Added to Bank', `Added ${selectedBullets.length} AI achievement bullets.`);
-      }
+    await executeBulletGeneration(exp, currentText, chosenMode, bulletIndex);
+  };
+
+  const handleSwitchMode = async (newMode: 'contextual' | 'generalized') => {
+    if (newMode === bulletMode || isGeneratingBullets || !activeAiExpId) return;
+    setBulletMode(newMode);
+    const exp = experience.find(e => e.id === activeAiExpId);
+    if (exp) {
+      await executeBulletGeneration(exp, currentDraftText, newMode, activeBulletIndex);
     }
+  };
+
+  const handleApplyBullets = (expId: string, asActive: boolean = true) => {
+    const exp = experience.find((e) => e.id === expId);
+    if (!exp || selectedBullets.length === 0) return;
+
+    const bank = (exp.bulletBank && exp.bulletBank.length > 0)
+      ? [...exp.bulletBank]
+      : exp.highlights.map((h, i) => ({ id: `b-${i}`, text: h, enabled: true }));
+
+    if (activeBulletIndex !== null) {
+      // Modifying/polishing an existing bullet
+      if (activeBulletIndex < bank.length) {
+        bank[activeBulletIndex] = { ...bank[activeBulletIndex], text: selectedBullets[0], enabled: asActive };
+      }
+      if (selectedBullets.length > 1) {
+        selectedBullets.slice(1).forEach((b) => {
+          bank.push({
+            id: `b-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+            text: b,
+            enabled: asActive,
+          });
+        });
+      }
+      const updatedHighlights = bank.filter(b => b.enabled).map(b => b.text);
+      updateExperienceItem(expId, { bulletBank: bank, highlights: updatedHighlights });
+      toast.success(
+        asActive ? 'Achievement Set Active' : 'Saved to Bullet Bank',
+        `Updated with AI-crafted Google X-Y-Z bullet points.`
+      );
+    } else {
+      // Adding new bullets
+      selectedBullets.forEach((bullet) => {
+        bank.push({
+          id: `b-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+          text: bullet,
+          enabled: asActive,
+        });
+      });
+      const updatedHighlights = bank.filter(b => b.enabled).map(b => b.text);
+      updateExperienceItem(expId, { bulletBank: bank, highlights: updatedHighlights });
+      toast.success(
+        asActive ? 'Bullets Added to Resume' : 'Banked in Career Vault',
+        `${asActive ? 'Activated' : 'Saved'} ${selectedBullets.length} accomplishments for "${exp.jobTitle || 'Role'}".`
+      );
+    }
+
     setActiveAiExpId(null);
     setActiveBulletIndex(null);
   };
@@ -269,10 +317,10 @@ export const ExperienceForm: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => openAiBulletsModal(exp)}
-                          className="flex items-center gap-1.5 px-2.5 py-1 text-[11px] font-bold text-blue-300 bg-blue-950/70 hover:bg-blue-900 border border-blue-800/80 rounded-lg transition"
+                          className="flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-blue-200 bg-gradient-to-r from-blue-900/90 to-indigo-900/90 hover:from-blue-800 hover:to-indigo-800 border border-blue-700/80 rounded-xl transition shadow-sm active:scale-95 cursor-pointer"
                         >
                           <Wand2 className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
-                          AI Generate Bullets
+                          <span>AI Bullet Assistant</span>
                         </button>
                       </div>
 
@@ -369,15 +417,48 @@ export const ExperienceForm: React.FC = () => {
 
       {/* AI Bullet Suggestions Modal */}
       {activeAiExpId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-in fade-in">
           <div className="bg-slate-900 border border-slate-800 text-slate-100 w-full max-w-xl rounded-2xl p-6 shadow-2xl space-y-4">
             <div className="flex justify-between items-center border-b border-slate-800 pb-3">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-blue-400" />
-                AI Bullet Point Generator
-              </h3>
+              <div>
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-blue-400" />
+                  AI Bullet Assistant (Google X-Y-Z Method)
+                </h3>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Accomplished [X], as measured by [Y], by doing [Z].
+                </p>
+              </div>
               <button onClick={() => setActiveAiExpId(null)} className="text-slate-400 hover:text-white p-1 rounded">
                 <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Mode Selector Pill Toggle */}
+            <div className="flex bg-slate-950/80 p-1 rounded-xl border border-slate-800 gap-1 text-xs">
+              <button
+                type="button"
+                onClick={() => handleSwitchMode('contextual')}
+                className={`flex-1 py-1.5 px-3 rounded-lg font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  bulletMode === 'contextual'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <span>🎯 Contextual Bullets</span>
+                <span className="text-[10px] opacity-75 hidden sm:inline">(Tailored to JD)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSwitchMode('generalized')}
+                className={`flex-1 py-1.5 px-3 rounded-lg font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                  bulletMode === 'generalized'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-slate-200'
+                }`}
+              >
+                <span>🌐 Role Standard / Generalized</span>
+                <span className="text-[10px] opacity-75 hidden sm:inline">(Universal)</span>
               </button>
             </div>
 
@@ -385,14 +466,29 @@ export const ExperienceForm: React.FC = () => {
               <div className="p-8 text-center space-y-2">
                 <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto" />
                 <p className="text-xs text-slate-400">
-                  {activeBulletIndex !== null ? 'Enhancing bullet point with action verbs & metrics...' : 'Generating achievement-driven metric bullets...'}
+                  {bulletMode === 'contextual'
+                    ? 'Crafting contextual accomplishment bullets tailored to target job & company...'
+                    : 'Generating universally accepted Google X-Y-Z achievement bullets...'}
                 </p>
               </div>
             ) : (
               <div className="space-y-3">
-                <p className="text-xs text-slate-400">
-                  Select the bullet points you wish to include in your resume:
-                </p>
+                <div className="flex items-center justify-between text-xs text-slate-400">
+                  <span>Select bullets to include ({selectedBullets.length} of {generatedBullets.length} selected):</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (selectedBullets.length === generatedBullets.length) {
+                        setSelectedBullets([]);
+                      } else {
+                        setSelectedBullets([...generatedBullets]);
+                      }
+                    }}
+                    className="text-[11px] text-blue-400 hover:text-blue-300 font-semibold cursor-pointer"
+                  >
+                    {selectedBullets.length === generatedBullets.length ? 'Deselect All' : 'Select All'}
+                  </button>
+                </div>
 
                 <div className="space-y-2 max-h-72 overflow-y-auto pr-1 custom-scrollbar">
                   {generatedBullets.map((bullet, idx) => {
@@ -422,20 +518,37 @@ export const ExperienceForm: React.FC = () => {
                   })}
                 </div>
 
-                <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+                {/* Actions Footer */}
+                <div className="flex flex-col sm:flex-row justify-between gap-2 pt-3 border-t border-slate-800">
                   <button
                     onClick={() => setActiveAiExpId(null)}
-                    className="px-3.5 py-1.5 text-xs text-slate-400 hover:text-white transition"
+                    className="px-3.5 py-1.5 text-xs text-slate-400 hover:text-white transition cursor-pointer self-start sm:self-auto"
                   >
                     Cancel
                   </button>
-                  <button
-                    onClick={() => handleApplySelectedBullets(activeAiExpId)}
-                    disabled={selectedBullets.length === 0}
-                    className="px-4 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-md transition disabled:opacity-50"
-                  >
-                    Add Selected Bullets ({selectedBullets.length})
-                  </button>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Add to Master Bullet Bank button (banked, not immediately on PDF unless toggled) */}
+                    <button
+                      onClick={() => handleApplyBullets(activeAiExpId, false)}
+                      disabled={selectedBullets.length === 0}
+                      className="px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl transition disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                      title="Store in your career vault without making them active immediately"
+                    >
+                      <Archive className="w-3.5 h-3.5 text-amber-400" />
+                      <span>+ Add to Master Bullet Bank ({selectedBullets.length})</span>
+                    </button>
+
+                    {/* Set Active directly on resume */}
+                    <button
+                      onClick={() => handleApplyBullets(activeAiExpId, true)}
+                      disabled={selectedBullets.length === 0}
+                      className="px-4 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                    >
+                      <Check className="w-3.5 h-3.5" />
+                      <span>{activeBulletIndex !== null ? 'Replace & Set Active' : `⚡ Add & Set Active (${selectedBullets.length})`}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
