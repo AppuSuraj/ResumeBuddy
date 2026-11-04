@@ -93,6 +93,60 @@ export function getResumeWordCount(resume?: ResumeData): number {
   return text.split(/\s+/).filter(Boolean).length;
 }
 
+/**
+ * Extracts candidate resume content for keyword matching.
+ * IMPORTANT: Excludes resume.jobTarget (which holds the JD and extracted keywords)
+ * to prevent false-positive self-matching.
+ */
+export function getResumeSearchableText(resume?: ResumeData): string {
+  if (!resume) return '';
+  const parts: string[] = [];
+  if (resume.personal?.fullName) parts.push(resume.personal.fullName);
+  if (resume.personal?.jobTitle) parts.push(resume.personal.jobTitle);
+  if (resume.personal?.summary) parts.push(resume.personal.summary);
+  if (resume.experience) {
+    resume.experience.forEach((exp) => {
+      if (exp.jobTitle) parts.push(exp.jobTitle);
+      if (exp.company) parts.push(exp.company);
+      if (exp.highlights) exp.highlights.forEach((h) => parts.push(h));
+    });
+  }
+  if (resume.education) {
+    resume.education.forEach((edu) => {
+      if (edu.degree) parts.push(edu.degree);
+      if (edu.institution) parts.push(edu.institution);
+      if (edu.description) parts.push(edu.description);
+    });
+  }
+  if (resume.skills) {
+    resume.skills.forEach((cat) => {
+      if (cat.categoryName) parts.push(cat.categoryName);
+      if (cat.skills) parts.push(...cat.skills);
+    });
+  }
+  if (resume.projects) {
+    resume.projects.forEach((proj) => {
+      if (proj.name) parts.push(proj.name);
+      if (proj.description) parts.push(proj.description);
+      if (proj.highlights) proj.highlights.forEach((h) => parts.push(h));
+      if (proj.techStack) proj.techStack.forEach((t) => parts.push(t));
+    });
+  }
+  if (resume.customSections) {
+    resume.customSections.forEach((sec) => {
+      if (sec.sectionTitle) parts.push(sec.sectionTitle);
+      if (sec.items) {
+        sec.items.forEach((item) => {
+          if (item.title) parts.push(item.title);
+          if (item.subtitle) parts.push(item.subtitle);
+          if (item.description) parts.push(item.description);
+        });
+      }
+    });
+  }
+  return parts.join(' ');
+}
+
 // Explicit stopword blacklist fallback ensuring generic English words are never scored as ATS keywords
 export const STOPWORD_BLACKLIST = new Set([
   'about', 'you', 'your', 'all', 'this', 'our', 'key', 'what', 'we', 'with',
@@ -235,10 +289,10 @@ export function analyzeJobDescription(
   let missingKeywords: string[] = [];
 
   if (currentResume) {
-    const resumeFullText = JSON.stringify(currentResume);
+    const resumeSearchText = getResumeSearchableText(currentResume);
     matchedKeywords = uniqueKeywords.filter((kw) => {
       const boundaryRegex = buildStrictWordBoundary(kw);
-      return boundaryRegex.test(resumeFullText);
+      return boundaryRegex.test(resumeSearchText);
     });
     missingKeywords = uniqueKeywords.filter((kw) => !matchedKeywords.includes(kw));
   } else {
@@ -340,7 +394,9 @@ export function analyzeJobDescription(
     missingCoreSections.push('Education');
   }
 
-  const atsScore = Math.min(100, Math.max(0, Math.round(keywordScore + roleScore + sectionScore)));
+  // Direct reactive ATS Score based on matched keywords against target keywords
+  const targetKeywordsCount = Math.max(uniqueKeywords.length, 1);
+  const atsScore = Math.min(100, Math.max(0, Math.round((matchedKeywords.length / targetKeywordsCount) * 100)));
 
   const recommendations: string[] = [];
   if (missingKeywords.length > 0) {

@@ -262,6 +262,46 @@ export const ResumeProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }, 15000);
   }, []);
 
+  // Real-time ATS match recalculation whenever candidate resume text or skills change
+  useEffect(() => {
+    if (
+      resumeData.jobTarget?.jobDescriptionText &&
+      resumeData.jobTarget?.extractedKeywords &&
+      resumeData.jobTarget.extractedKeywords.length > 0
+    ) {
+      const reanalyzed = analyzeJobDescription(
+        resumeData.jobTarget.targetRoleTitle,
+        resumeData.jobTarget.jobDescriptionText,
+        resumeData,
+        resumeData.jobTarget.extractedKeywords
+      );
+
+      const currentMatched = (resumeData.jobTarget.matchFeedback?.matchedKeywords || []).join(',');
+      const newMatched = (reanalyzed.matchFeedback?.matchedKeywords || []).join(',');
+      const currentScore = resumeData.jobTarget.atsScore ?? 0;
+
+      if (currentMatched !== newMatched || currentScore !== reanalyzed.atsScore) {
+        setResumeData((prev) => ({
+          ...prev,
+          jobTarget: {
+            ...prev.jobTarget,
+            atsScore: reanalyzed.atsScore,
+            matchFeedback: reanalyzed.matchFeedback,
+          },
+        }));
+      }
+    }
+  }, [
+    resumeData.skills,
+    resumeData.experience,
+    resumeData.education,
+    resumeData.projects,
+    resumeData.personal,
+    resumeData.customSections,
+    resumeData.jobTarget?.jobDescriptionText,
+    resumeData.jobTarget?.targetRoleTitle,
+  ]);
+
   // When switching users or logging out, clear and reload scoped memory state
   useEffect(() => {
     const scoped = loadScopedData(effectiveUserId);

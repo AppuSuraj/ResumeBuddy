@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useResume } from '../../context/ResumeContext';
 import { useToast } from '../common/Toast';
-import { analyzeJobDescription, extractJdKeywordsWithAi, escapeRegex } from '../../services/aiService';
+import { 
+  analyzeJobDescription, 
+  extractJdKeywordsWithAi, 
+  escapeRegex,
+  getResumeWordCount 
+} from '../../services/aiService';
 import { ResumeData, SkillCategory } from '../../types/resume';
 import { 
   Target, 
@@ -15,7 +20,8 @@ import {
   Eye, 
   Edit3, 
   Highlighter,
-  ArrowRight 
+  ArrowRight,
+  FileCheck2 
 } from 'lucide-react';
 
 export const TargetJobPanel: React.FC = () => {
@@ -35,7 +41,13 @@ export const TargetJobPanel: React.FC = () => {
   const [roleTitle, setRoleTitle] = useState(jobTarget.targetRoleTitle || '');
   const [jdText, setJdText] = useState(jobTarget.jobDescriptionText || '');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [jdViewMode, setJdViewMode] = useState<'editor' | 'diff'>('diff');
+  // Default to Paste/Raw Text mode first
+  const [jdViewMode, setJdViewMode] = useState<'editor' | 'diff'>('editor');
+
+  const jdWordCount = jdText.trim() ? jdText.trim().split(/\s+/).filter(Boolean).length : 0;
+  const hasExtractedKeywords = Boolean(jobTarget.extractedKeywords && jobTarget.extractedKeywords.length > 0);
+  const canShowDiff = jdWordCount >= 30 && hasExtractedKeywords;
+  const resumeWordCount = getResumeWordCount(resumeData);
 
   // Sync local inputs when target data updates externally
   useEffect(() => {
@@ -89,7 +101,11 @@ export const TargetJobPanel: React.FC = () => {
     toast.success('Title Synced', `Resume headline updated to "${roleTitle.trim()}".`);
   };
 
-  const handleAddMissingKeywordToSkills = (keyword: string) => {
+  const handleAddMissingKeywordToSkills = (keyword: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     const cleanKw = keyword.trim();
     if (!cleanKw) return;
 
@@ -103,6 +119,7 @@ export const TargetJobPanel: React.FC = () => {
         toast.info('Already in Skills', `"${cleanKw}" is already listed.`);
         return;
       }
+      // ONLY push this single keyword
       const newSkills = [...firstCat.skills, cleanKw];
       updatedSkills = resumeData.skills.map((s, idx) =>
         idx === 0 ? { ...s, skills: newSkills } : s
@@ -249,18 +266,18 @@ export const TargetJobPanel: React.FC = () => {
       </div>
 
       {/* Target Job Input Form */}
-      <form onSubmit={handleUpdate} className="space-y-3 bg-slate-900/80 border border-slate-800/80 p-4 rounded-xl shadow-sm">
-        <div>
-          <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
-              Target Job Role
-            </label>
-            {/* Explicit Override: Manual sync button when user has a custom headline */}
+      <form onSubmit={handleUpdate} className="space-y-4 bg-slate-900/80 border border-slate-800/80 p-4 sm:p-5 rounded-2xl shadow-sm">
+        {/* Prominent Target Role Position Field */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-blue-500/15 border border-blue-500/30 text-[11px] font-extrabold uppercase tracking-wider text-blue-400">
+              🎯 TARGET ROLE / POSITION
+            </span>
             {roleTitle.trim() && personal.jobTitle?.trim() !== roleTitle.trim() && (
               <button
                 type="button"
                 onClick={handleSyncToResumeTitle}
-                className="text-[10px] font-semibold text-blue-400 hover:text-blue-300 bg-blue-950/70 hover:bg-blue-900/80 border border-blue-800/80 px-2 py-0.5 rounded-md flex items-center gap-1 transition shadow-sm"
+                className="text-[10px] font-semibold text-blue-400 hover:text-blue-300 bg-blue-950/70 hover:bg-blue-900/80 border border-blue-800/80 px-2.5 py-0.5 rounded-md flex items-center gap-1 transition shadow-sm cursor-pointer"
                 title="Sync this Target Role directly to your resume headline"
               >
                 <RefreshCw className="w-2.5 h-2.5" />
@@ -272,11 +289,11 @@ export const TargetJobPanel: React.FC = () => {
             type="text"
             value={roleTitle}
             onChange={(e) => setRoleTitle(e.target.value)}
-            placeholder="e.g. Lead Frontend Engineer, Senior Product Manager..."
-            className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+            placeholder="e.g. Senior Full-Stack Engineer, Product Marketing Manager"
+            className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-lg md:text-xl font-bold tracking-tight text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
           />
-          <p className="text-[11px] text-slate-400 mt-1">
-            Used for ATS scoring against target job descriptions.
+          <p className="text-[11px] text-slate-400">
+            e.g., Senior Full-Stack Engineer, Product Marketing Manager
           </p>
         </div>
 
@@ -288,41 +305,57 @@ export const TargetJobPanel: React.FC = () => {
             <div className="flex items-center gap-1 bg-slate-800 p-0.5 rounded-lg border border-slate-700/80">
               <button
                 type="button"
-                onClick={() => setJdViewMode('diff')}
-                className={`flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md transition ${
-                  jdViewMode === 'diff'
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
-                }`}
-                title="View interactive keyword highlighting & gap diff"
-              >
-                <Highlighter className="w-3 h-3" />
-                <span>Visual Diff</span>
-              </button>
-              <button
-                type="button"
                 onClick={() => setJdViewMode('editor')}
-                className={`flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-md transition ${
+                className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold rounded-md transition ${
                   jdViewMode === 'editor'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white'
+                    : 'text-slate-400 hover:text-white cursor-pointer'
                 }`}
                 title="Edit raw job description text"
               >
                 <Edit3 className="w-3 h-3" />
                 <span>Edit Raw Text</span>
               </button>
+              <button
+                type="button"
+                disabled={!canShowDiff}
+                onClick={() => {
+                  if (canShowDiff) setJdViewMode('diff');
+                }}
+                className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold rounded-md transition ${
+                  jdViewMode === 'diff'
+                    ? 'bg-blue-600 text-white shadow-sm'
+                    : canShowDiff
+                    ? 'text-slate-400 hover:text-white cursor-pointer'
+                    : 'text-slate-600 opacity-40 cursor-not-allowed'
+                }`}
+                title={
+                  !canShowDiff
+                    ? 'Paste a Job Description first (min 30 words) and click Analyze to see keyword highlights.'
+                    : 'View interactive keyword highlighting & gap diff'
+                }
+              >
+                <Highlighter className="w-3 h-3" />
+                <span>Visual Diff</span>
+              </button>
             </div>
           </div>
 
           {jdViewMode === 'editor' ? (
-            <textarea
-              rows={5}
-              value={jdText}
-              onChange={(e) => setJdText(e.target.value)}
-              placeholder="Paste job posting requirements & responsibilities..."
-              className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl p-3 text-xs text-slate-200 placeholder-slate-500 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 leading-relaxed"
-            />
+            <div className="space-y-1">
+              <textarea
+                rows={5}
+                value={jdText}
+                onChange={(e) => setJdText(e.target.value)}
+                placeholder="Paste job posting requirements & responsibilities..."
+                className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl p-3 text-xs text-slate-200 placeholder-slate-500 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 leading-relaxed"
+              />
+              {!canShowDiff && (
+                <p className="text-[11px] text-slate-400 italic">
+                  Paste a Job Description first to see keyword highlights (minimum 30 words & click &quot;Analyze &amp; Calculate Match&quot;).
+                </p>
+              )}
+            </div>
           ) : (
             <div className="space-y-2">
               {/* Witty ATS Pro-Tip Banner */}
@@ -404,7 +437,11 @@ export const TargetJobPanel: React.FC = () => {
                               <button
                                 key={i}
                                 type="button"
-                                onClick={() => handleAddMissingKeywordToSkills(foundMissing)}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  handleAddMissingKeywordToSkills(foundMissing, e);
+                                }}
                                 className="bg-amber-950/30 hover:bg-amber-900/40 text-amber-300 hover:text-amber-100 border border-amber-800/40 hover:border-amber-700/60 rounded px-1.5 py-0.5 mx-0.5 font-medium transition inline-flex items-center gap-1 active:scale-95 text-left cursor-pointer group shadow-sm"
                                 title={`⚠️ Missing keyword: Click to add "${foundMissing}" to Skills`}
                               >
@@ -448,7 +485,7 @@ export const TargetJobPanel: React.FC = () => {
         <div className="flex items-center justify-between">
           <div>
             <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">ATS Match Analysis</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Based on keyword frequency in target job</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Real-time keyword match vs target requirements</p>
           </div>
           <div
             className={`text-sm font-black px-3 py-1 rounded-full border transition ${
@@ -473,18 +510,46 @@ export const TargetJobPanel: React.FC = () => {
           />
         </div>
 
-        {/* Concise Counter */}
-        <div className="flex items-center justify-between text-xs py-1.5 px-3 rounded-lg bg-slate-800/60 border border-slate-700/60 text-slate-300">
-          <span className="font-semibold text-slate-200">
-            {totalCoreKeywords > 0
-              ? `Matched ${matchedKeywords.length} of ${totalCoreKeywords} core keywords`
-              : 'No keywords detected yet'}
-          </span>
-          <span className="text-[11px] font-mono text-slate-400">
-            {totalCoreKeywords > 0
-              ? `${Math.round((matchedKeywords.length / totalCoreKeywords) * 100)}% keyword match`
-              : '0%'}
-          </span>
+        {/* Reactive Health Check Metric Triplet: Matched, Missing, Resume Word Count */}
+        <div className="grid grid-cols-3 gap-2 text-xs">
+          <div className="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-emerald-400 flex items-center gap-1">
+              <Check className="w-3 h-3 text-emerald-400" />
+              Matched
+            </span>
+            <span className="text-base font-extrabold text-white mt-1">{matchedKeywords.length}</span>
+            <span className="text-[10px] text-slate-400">in resume</span>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-amber-400 flex items-center gap-1">
+              <AlertCircle className="w-3 h-3 text-amber-400" />
+              Missing
+            </span>
+            <span className="text-base font-extrabold text-white mt-1">{missingKeywords.length}</span>
+            <span className="text-[10px] text-slate-400">gaps to target</span>
+          </div>
+
+          <div className="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-blue-400 flex items-center gap-1">
+              <FileCheck2 className="w-3 h-3 text-blue-400" />
+              Word Health
+            </span>
+            <span className="text-base font-extrabold text-white mt-1">{resumeWordCount}</span>
+            <span className={`text-[10px] font-semibold ${
+              resumeWordCount >= 100 && resumeWordCount <= 600
+                ? 'text-emerald-400'
+                : resumeWordCount > 600
+                ? 'text-blue-300'
+                : 'text-amber-400'
+            }`}>
+              {resumeWordCount >= 100 && resumeWordCount <= 600
+                ? '✓ Optimal'
+                : resumeWordCount > 600
+                ? '• Detailed'
+                : '⚠️ Under 100 w'}
+            </span>
+          </div>
         </div>
 
         {/* Matched Keywords Cluster */}
@@ -513,7 +578,7 @@ export const TargetJobPanel: React.FC = () => {
           )}
         </div>
 
-        {/* Missing Keywords Cluster */}
+        {/* Missing Keywords Cluster with Isolated Pill State */}
         <div>
           <div className="flex items-center justify-between mb-2">
             <div className="text-[11px] font-semibold text-amber-400 flex items-center gap-1.5">
@@ -524,7 +589,7 @@ export const TargetJobPanel: React.FC = () => {
               <button
                 type="button"
                 onClick={handleAddAllMissingKeywords}
-                className="text-[11px] font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 hover:underline transition"
+                className="text-[11px] font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 hover:underline transition cursor-pointer"
               >
                 <PlusCircle className="w-3.5 h-3.5" />
                 Add All to Skills
@@ -533,21 +598,44 @@ export const TargetJobPanel: React.FC = () => {
           </div>
           {missingKeywords.length > 0 ? (
             <div className="flex flex-wrap gap-1.5">
-              {missingKeywords.map((kw, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  onClick={() => handleAddMissingKeywordToSkills(kw)}
-                  title="Click to add this keyword to your Skills section"
-                  className="group text-[11px] font-sans px-2.5 py-1 rounded-lg bg-amber-950/30 hover:bg-amber-900/40 text-amber-300 hover:text-amber-100 border border-amber-800/40 hover:border-amber-700/60 flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-sm"
-                >
-                  <Plus className="w-3 h-3 text-amber-400 group-hover:scale-125 transition-transform" />
-                  <span>{kw}</span>
-                  <span className="text-[10px] text-amber-400/80 group-hover:text-amber-200 bg-amber-900/40 px-1 py-0.2 rounded font-sans">
-                    + Add
-                  </span>
-                </button>
-              ))}
+              {missingKeywords.map((kw, i) => {
+                const isSelectedOrAdded = resumeData.skills.some((c) =>
+                  c.skills.some((s) => s.toLowerCase() === kw.toLowerCase())
+                );
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleAddMissingKeywordToSkills(kw, e);
+                    }}
+                    title={isSelectedOrAdded ? `"${kw}" is already in your skills` : `Click to add "${kw}" to Skills`}
+                    className={`group text-[11px] font-sans px-2.5 py-1 rounded-lg border flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-sm ${
+                      isSelectedOrAdded
+                        ? 'bg-emerald-950/40 text-emerald-300 border-emerald-800/50'
+                        : 'bg-amber-950/30 hover:bg-amber-900/40 text-amber-300 hover:text-amber-100 border border-amber-800/40 hover:border-amber-700/60'
+                    }`}
+                  >
+                    {isSelectedOrAdded ? (
+                      <Check className="w-3 h-3 text-emerald-400" />
+                    ) : (
+                      <Plus className="w-3 h-3 text-amber-400 group-hover:scale-125 transition-transform" />
+                    )}
+                    <span>{kw}</span>
+                    <span
+                      className={`text-[10px] px-1 py-0.2 rounded font-sans ${
+                        isSelectedOrAdded
+                          ? 'bg-emerald-900/40 text-emerald-300'
+                          : 'bg-amber-900/40 text-amber-400/80 group-hover:text-amber-200'
+                      }`}
+                    >
+                      {isSelectedOrAdded ? 'Added' : '+ Add'}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           ) : totalCoreKeywords > 0 ? (
             <p className="text-[11px] text-emerald-400 font-medium flex items-center gap-1">

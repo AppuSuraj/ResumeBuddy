@@ -11,17 +11,21 @@ import {
   PlusCircle, 
   Palette, 
   LayoutGrid,
+  ChevronLeft,
   ChevronRight
 } from 'lucide-react';
 
 export const EditorTabs: React.FC = () => {
   const { activeTab, setActiveTab, resumeData } = useResume();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<{ [key: string]: HTMLButtonElement | null }>({});
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
   const checkScroll = useCallback(() => {
     if (scrollRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      setCanScrollLeft(scrollLeft > 10);
       setCanScrollRight(scrollWidth - scrollLeft - clientWidth > 15);
     }
   }, []);
@@ -32,9 +36,27 @@ export const EditorTabs: React.FC = () => {
     return () => window.removeEventListener('resize', checkScroll);
   }, [checkScroll]);
 
+  // Keep active tab visible on change
+  useEffect(() => {
+    const activeBtn = tabRefs.current[activeTab];
+    if (activeBtn && scrollRef.current) {
+      activeBtn.scrollIntoView({
+        behavior: 'smooth',
+        inline: 'nearest',
+        block: 'nearest',
+      });
+    }
+  }, [activeTab]);
+
+  const handleScrollLeft = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: -180, behavior: 'smooth' });
+    }
+  };
+
   const handleScrollRight = () => {
     if (scrollRef.current) {
-      scrollRef.current.scrollBy({ left: 160, behavior: 'smooth' });
+      scrollRef.current.scrollBy({ left: 180, behavior: 'smooth' });
     }
   };
 
@@ -76,10 +98,27 @@ export const EditorTabs: React.FC = () => {
 
   return (
     <div className="relative bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+      {/* Dynamic Left Gradient Mask & Back Chevron */}
+      {canScrollLeft && (
+        <>
+          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent pointer-events-none z-10" />
+          <button
+            type="button"
+            onClick={handleScrollLeft}
+            className="absolute left-1.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 flex items-center justify-center rounded-full bg-slate-800/90 hover:bg-slate-700 text-blue-300 border border-slate-700 shadow-md backdrop-blur-md transition cursor-pointer"
+            title="Scroll back left"
+            aria-label="Scroll back to previous sections"
+          >
+            <ChevronLeft className="w-4 h-4 text-blue-400" />
+          </button>
+        </>
+      )}
+
+      {/* Two-Way Horizontal Scroll Container */}
       <div 
         ref={scrollRef}
         onScroll={checkScroll}
-        className="px-2 py-2 flex items-center overflow-x-auto scrollbar-none gap-1.5 scroll-smooth"
+        className="px-6 py-2 flex items-center overflow-x-auto overscroll-x-contain scrollbar-none gap-1.5 scroll-smooth"
       >
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -89,6 +128,7 @@ export const EditorTabs: React.FC = () => {
           return (
             <button
               key={tab.id}
+              ref={(el) => { tabRefs.current[tab.id] = el; }}
               onClick={() => setActiveTab(tab.id)}
               className={`group relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold tracking-wide whitespace-nowrap transition-all duration-200 cursor-pointer ${
                 isActive
@@ -106,18 +146,18 @@ export const EditorTabs: React.FC = () => {
         })}
       </div>
 
-      {/* Horizontal Scroll Right Gradient Fade Mask & Indicator */}
+      {/* Dynamic Right Gradient Mask & Forward Chevron */}
       {canScrollRight && (
         <>
-          <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-slate-900 via-slate-900/80 to-transparent pointer-events-none z-10" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-slate-900 via-slate-900/80 to-transparent pointer-events-none z-10" />
           <button
             type="button"
             onClick={handleScrollRight}
-            className="absolute right-2 top-1/2 -translate-y-1/2 z-20 flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-800 hover:bg-slate-700 text-[11px] font-semibold text-blue-300 border border-slate-700 shadow-md backdrop-blur-md transition cursor-pointer"
-            title="Scroll to view more sections"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 flex items-center justify-center rounded-full bg-slate-800/90 hover:bg-slate-700 text-blue-300 border border-slate-700 shadow-md backdrop-blur-md transition cursor-pointer"
+            title="Scroll forward right"
+            aria-label="Scroll forward to more sections"
           >
-            <span>More sections</span>
-            <ChevronRight className="w-3.5 h-3.5 text-blue-400" />
+            <ChevronRight className="w-4 h-4 text-blue-400" />
           </button>
         </>
       )}
