@@ -124,7 +124,7 @@ export const MainApp: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 flex flex-col font-sans selection:bg-blue-600 selection:text-white transition-colors duration-150">
       {/* Guest Authentication Gatekeeper Modal (Active when guest session is required) */}
       <GuestGatekeeperModal />
 
@@ -138,7 +138,7 @@ export const MainApp: React.FC = () => {
         {/* Desktop Split-Screen Workspace */}
         <div className="flex-1 flex flex-row overflow-hidden">
           {/* Left Side: Form Editor Panel */}
-          <div className="w-[46%] lg:w-[42%] bg-slate-900/95 border-r border-slate-800/80 flex flex-col h-[calc(100vh-57px)]">
+          <div className="w-[46%] lg:w-[42%] bg-white dark:bg-slate-900/95 border-r border-slate-200 dark:border-slate-800/80 flex flex-col h-[calc(100vh-57px)]">
             <EditorTabs />
             <div className="flex-1 overflow-y-auto custom-scrollbar">
               {renderActiveTabContent()}
@@ -146,26 +146,26 @@ export const MainApp: React.FC = () => {
           </div>
 
           {/* Right Side: Live WYSIWYG Resume Preview */}
-          <div className="w-[54%] lg:w-[58%] bg-slate-950 flex flex-col h-[calc(100vh-57px)] relative overflow-hidden">
+          <div className="w-[54%] lg:w-[58%] bg-slate-200/70 dark:bg-slate-950 flex flex-col h-[calc(100vh-57px)] relative overflow-hidden transition-colors duration-150">
             {/* Live Preview Controls Header */}
-            <div className="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 px-4 py-2 flex items-center justify-between z-10 gap-3">
+            <div className="bg-white/90 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-4 py-2 flex items-center justify-between z-10 gap-3">
               {/* Left: Quick Template Selector & Page Format Badge */}
               <div className="flex items-center gap-3">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-200">
-                  <Eye className="w-4 h-4 text-blue-400" />
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-700 dark:text-slate-200">
+                  <Eye className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                   <span className="hidden sm:inline">Preview</span>
                 </div>
 
                 {/* Quick Template Switcher Dropdown */}
-                <div className="flex items-center gap-1.5 bg-slate-800/80 border border-slate-700/80 rounded-lg px-2 py-1 text-xs text-slate-200 min-h-[36px]">
-                  <Layout className="w-3.5 h-3.5 text-slate-400" />
+                <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-lg px-2 py-1 text-xs text-slate-700 dark:text-slate-200 min-h-[36px]">
+                  <Layout className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
                   <select
                     value={resumeData.style.templateId}
                     onChange={(e) => updateStyleConfig({ templateId: e.target.value as TemplateId })}
-                    className="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer pr-1"
+                    className="bg-transparent text-xs font-semibold text-slate-800 dark:text-white focus:outline-none cursor-pointer pr-1"
                   >
                     {TEMPLATE_METADATA.map((t) => (
-                      <option key={t.id} value={t.id} className="bg-slate-900 text-white">
+                      <option key={t.id} value={t.id} className="bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
                         {t.name}
                       </option>
                     ))}
@@ -182,7 +182,7 @@ export const MainApp: React.FC = () => {
                         onClick={() => updateStyleConfig({ primaryColor: color })}
                         style={{ backgroundColor: color }}
                         className={`w-4 h-4 rounded-full transition-transform hover:scale-125 ${
-                          isCurrent ? 'ring-2 ring-white scale-110 shadow-sm' : 'opacity-80 hover:opacity-100'
+                          isCurrent ? 'ring-2 ring-blue-500 dark:ring-white scale-110 shadow-sm' : 'opacity-80 hover:opacity-100'
                         }`}
                         title={color}
                       />
@@ -193,26 +193,26 @@ export const MainApp: React.FC = () => {
 
               {/* Right: Zoom & Canvas Controls */}
               <div className="flex items-center gap-2">
-                <span className="hidden sm:inline-block text-[10px] font-mono font-medium text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded border border-slate-700/60">
+                <span className="hidden sm:inline-block text-[10px] font-mono font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-slate-800/80 px-2 py-0.5 rounded border border-slate-200 dark:border-slate-700/60">
                   A4 Standard
                 </span>
 
-                <div className="flex items-center gap-1 bg-slate-800/80 border border-slate-700/80 p-0.5 rounded-lg text-xs min-h-[36px]">
+                <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 p-0.5 rounded-lg text-xs min-h-[36px]">
                   <button
                     type="button"
                     onClick={() => setZoomLevel((z) => Math.max(50, z - 10))}
-                    className="p-1.5 text-slate-400 hover:text-white rounded hover:bg-slate-700/80 transition cursor-pointer"
+                    className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded hover:bg-slate-200 dark:hover:bg-slate-700/80 transition cursor-pointer"
                     title="Zoom Out"
                   >
                     <ZoomOut className="w-3.5 h-3.5" />
                   </button>
-                  <span className="px-1 text-[11px] font-mono text-slate-300 min-w-[38px] text-center select-none">
+                  <span className="px-1 text-[11px] font-mono text-slate-700 dark:text-slate-300 min-w-[38px] text-center select-none font-semibold">
                     {zoomLevel}%
                   </span>
                   <button
                     type="button"
                     onClick={() => setZoomLevel((z) => Math.min(130, z + 10))}
-                    className="p-1.5 text-slate-400 hover:text-white rounded hover:bg-slate-700/80 transition cursor-pointer"
+                    className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded hover:bg-slate-200 dark:hover:bg-slate-700/80 transition cursor-pointer"
                     title="Zoom In"
                   >
                     <ZoomIn className="w-3.5 h-3.5" />
@@ -220,7 +220,7 @@ export const MainApp: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setZoomLevel(100)}
-                    className="p-1.5 text-slate-400 hover:text-white rounded hover:bg-slate-700/80 ml-0.5 transition cursor-pointer"
+                    className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white rounded hover:bg-slate-200 dark:hover:bg-slate-700/80 ml-0.5 transition cursor-pointer"
                     title="Reset Zoom (100%)"
                   >
                     <Maximize2 className="w-3.5 h-3.5" />
@@ -230,7 +230,7 @@ export const MainApp: React.FC = () => {
             </div>
 
             {/* Scalable Resume Canvas */}
-            <div className="flex-1 overflow-auto p-4 md:p-8 flex flex-col items-center justify-start bg-slate-950/80 custom-scrollbar">
+            <div className="flex-1 overflow-auto p-4 md:p-8 flex flex-col items-center justify-start bg-slate-200/50 dark:bg-slate-950/80 custom-scrollbar">
               <WelcomeHeroBanner />
 
               <div
@@ -243,7 +243,7 @@ export const MainApp: React.FC = () => {
               >
                 <div
                   id="resume-preview-container"
-                  className="bg-white text-slate-900 shadow-2xl rounded-sm min-h-[297mm] overflow-hidden ring-1 ring-slate-800/40"
+                  className="bg-white text-slate-900 shadow-2xl rounded-sm min-h-[297mm] overflow-hidden ring-1 ring-slate-300 dark:ring-slate-800/40"
                 >
                   <TemplateRenderer data={resumeData} />
                 </div>
@@ -256,17 +256,17 @@ export const MainApp: React.FC = () => {
       {/* ========================================================================= */}
       {/* 2. DEDICATED MOBILE SHELL (< 768px Viewports, Native App Ergonomics)       */}
       {/* ========================================================================= */}
-      <div className="flex md:hidden flex-col h-[100dvh] w-full overflow-hidden bg-slate-950 text-slate-100">
+      <div className="flex md:hidden flex-col h-[100dvh] w-full overflow-hidden bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-150">
         {/* Layer 1: Compact Mobile Top Bar (Sticky, Height: 52px) */}
-        <header className="h-[52px] bg-slate-900/95 backdrop-blur-xl border-b border-slate-800 px-3 flex items-center justify-between z-30 shrink-0">
+        <header className="h-[52px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 px-3 flex items-center justify-between z-30 shrink-0">
           {/* Left: Brand Icon + Active Template Name Pill */}
           <div className="flex items-center gap-2 min-w-0">
             <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 ring-1 ring-white/10 shrink-0">
               <Sparkles className="w-4 h-4" />
             </div>
             <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-xs font-bold text-white tracking-tight shrink-0">ResumeBuddy</span>
-              <span className="text-[10px] font-medium text-slate-300 bg-slate-800/90 border border-slate-700/70 px-2 py-0.5 rounded-full truncate max-w-[110px]">
+              <span className="text-xs font-bold text-slate-900 dark:text-white tracking-tight shrink-0">ResumeBuddy</span>
+              <span className="text-[10px] font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800/90 border border-slate-200 dark:border-slate-700/70 px-2 py-0.5 rounded-full truncate max-w-[110px]">
                 {activeTemplateName}
               </span>
             </div>
@@ -283,14 +283,14 @@ export const MainApp: React.FC = () => {
               }}
               className={`min-h-[36px] px-2 py-1 rounded-lg border text-[11px] font-bold flex items-center gap-1 transition cursor-pointer select-none ${
                 atsScore >= 80
-                  ? 'bg-emerald-950/70 text-emerald-300 border-emerald-800/80'
+                  ? 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/80'
                   : atsScore >= 65
-                  ? 'bg-amber-950/70 text-amber-300 border-amber-800/80'
-                  : 'bg-rose-950/70 text-rose-300 border-rose-800/80'
+                  ? 'bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800/80'
+                  : 'bg-rose-100 dark:bg-rose-950/70 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800/80'
               }`}
               title="ATS Score - tap to optimize"
             >
-              <Zap className="w-3 h-3 text-amber-400 fill-amber-400" />
+              <Zap className="w-3 h-3 text-amber-500 dark:text-amber-400 fill-amber-500 dark:fill-amber-400" />
               <span>{atsScore}% ATS</span>
             </button>
 
@@ -301,20 +301,20 @@ export const MainApp: React.FC = () => {
                 setMobileTab('editor');
                 setActiveTab('style');
               }}
-              className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white transition cursor-pointer"
+              className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
               title="Customize Template & Style"
             >
-              <Palette className="w-4 h-4 text-indigo-400" />
+              <Palette className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
             </button>
 
             {/* Quick Sample Button */}
             <button
               type="button"
               onClick={handleLoadSample}
-              className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-slate-300 hover:text-white transition cursor-pointer"
+              className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
               title="Load Executive Sample Resume"
             >
-              <RefreshCw className="w-4 h-4 text-slate-300" />
+              <RefreshCw className="w-4 h-4 text-slate-500 dark:text-slate-300" />
             </button>
           </div>
         </header>
@@ -332,7 +332,7 @@ export const MainApp: React.FC = () => {
 
           {/* Subview B: Mobile Preview (Auto-Fit Scaling Engine) */}
           <div
-            className={`w-full h-full bg-slate-900/90 overflow-y-auto overflow-x-hidden flex flex-col items-center justify-start p-3 pb-24 custom-scrollbar ${
+            className={`w-full h-full bg-slate-200/80 dark:bg-slate-900/90 overflow-y-auto overflow-x-hidden flex flex-col items-center justify-start p-3 pb-24 custom-scrollbar ${
               mobileTab === 'preview' ? 'flex' : 'hidden'
             }`}
           >
@@ -366,15 +366,15 @@ export const MainApp: React.FC = () => {
         </main>
 
         {/* Layer 3: Native App Bottom Navigation Bar (Sticky Bottom, Height: 60px) */}
-        <nav className="h-[60px] bg-slate-900/95 backdrop-blur-xl border-t border-slate-800 px-3 py-1.5 flex items-center justify-around gap-2 z-40 shrink-0 pb-[max(0.25rem,env(safe-area-inset-bottom))]">
+        <nav className="h-[60px] bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 px-3 py-1.5 flex items-center justify-around gap-2 z-40 shrink-0 pb-[max(0.25rem,env(safe-area-inset-bottom))]">
           {/* Tab 1: Edit Content */}
           <button
             type="button"
             onClick={() => setMobileTab('editor')}
             className={`flex-1 min-h-[44px] h-full flex flex-col items-center justify-center gap-0.5 rounded-xl text-xs font-semibold transition cursor-pointer select-none ${
               mobileTab === 'editor'
-                ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30 shadow-sm shadow-blue-500/10'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-blue-600/15 dark:bg-blue-600/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 shadow-xs'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Edit3 className="w-4 h-4" />
@@ -387,8 +387,8 @@ export const MainApp: React.FC = () => {
             onClick={() => setMobileTab('preview')}
             className={`flex-1 min-h-[44px] h-full flex flex-col items-center justify-center gap-0.5 rounded-xl text-xs font-semibold transition cursor-pointer select-none ${
               mobileTab === 'preview'
-                ? 'bg-blue-600/20 text-blue-400 border border-blue-500/30 shadow-sm shadow-blue-500/10'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-blue-600/15 dark:bg-blue-600/20 text-blue-600 dark:text-blue-400 border border-blue-500/30 shadow-xs'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
             <Eye className="w-4 h-4" />

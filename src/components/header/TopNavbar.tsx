@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useResume } from '../../context/ResumeContext';
 import { useToast } from '../common/Toast';
 import { exportResumeToPdf } from '../../services/pdfExporter';
@@ -22,13 +22,19 @@ import {
   KeyRound,
   Printer,
   LogOut,
-  UserCheck
+  UserCheck,
+  Sun,
+  Moon,
+  Command,
+  X,
+  Laptop
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ResumeManagerModal } from './ResumeManagerModal';
 import { UploadResumeModal } from '../onboarding/UploadResumeModal';
 import { logoutAdmin, changeMasterPassword } from '../../services/adminAuthService';
 import { useGuestAuth } from '../../hooks/useGuestAuth';
+import { useTheme } from '../../context/ThemeContext';
 
 export const TopNavbar: React.FC = () => {
   const { 
@@ -39,9 +45,11 @@ export const TopNavbar: React.FC = () => {
     loadSampleData, 
     clearResumeToBlank,
     exportAsJson, 
-    importFromJson 
+    importFromJson,
+    userProfile
   } = useResume();
   const toast = useToast();
+  const { theme, toggleTheme } = useTheme();
 
   const [isExportingPdf, setIsExportingPdf] = useState(false);
   const [isExportingDocx, setIsExportingDocx] = useState(false);
@@ -49,11 +57,30 @@ export const TopNavbar: React.FC = () => {
   const [showManagerModal, setShowManagerModal] = useState(false);
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [showExportMenu, setShowExportMenu] = useState(false);
-  const [showGuestMenu, setShowGuestMenu] = useState(false);
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showShortcutsModal, setShowShortcutsModal] = useState(false);
   const [apiKeyInput, setApiKeyInput] = useState(getStoredApiKey());
   const [savedKeySuccess, setSavedKeySuccess] = useState(false);
 
   const { session, user, logout: logoutGuest } = useGuestAuth();
+
+  // Keyboard shortcut listener (Ctrl+S, Ctrl+P, Ctrl+D, Ctrl+/)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === '/') {
+        e.preventDefault();
+        setShowShortcutsModal((prev) => !prev);
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        toast.success('Resume Saved', 'All changes stored in local client cache.');
+      } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'd') {
+        e.preventDefault();
+        toggleTheme();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [toggleTheme, toast]);
 
   // Admin Security modal states
   const [settingsTab, setSettingsTab] = useState<'ai' | 'security'>('ai');
@@ -175,7 +202,7 @@ export const TopNavbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 bg-slate-900/90 backdrop-blur-xl border-b border-slate-800/80 text-slate-100 px-4 py-2.5 flex items-center justify-between gap-3">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-slate-900/90 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800/80 text-slate-900 dark:text-slate-100 px-4 py-2.5 flex items-center justify-between gap-3">
         {/* Left: Brand Identity */}
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-sky-500 flex items-center justify-center text-white shadow-md shadow-blue-500/20 ring-1 ring-white/10">
@@ -183,18 +210,18 @@ export const TopNavbar: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-bold tracking-tight text-white">ResumeBuddy</span>
-              <span className="text-[10px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-400 border border-blue-500/20">
+              <span className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">ResumeBuddy</span>
+              <span className="text-[10px] font-semibold tracking-wider uppercase px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/20">
                 AI Powered
               </span>
             </div>
-            <div className="flex items-center gap-2 text-[11px] text-slate-400">
-              <span className="truncate max-w-[150px] text-slate-300 font-medium">
+            <div className="flex items-center gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+              <span className="truncate max-w-[150px] text-slate-700 dark:text-slate-300 font-medium">
                 {resumeData.title || 'Untitled Resume'}
               </span>
-              <span className="text-slate-600">•</span>
-              <span className="flex items-center gap-1 text-[10px] text-emerald-400/90 font-mono">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-slate-300 dark:text-slate-600">•</span>
+              <span className="flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400/90 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
                 Autosaved
               </span>
             </div>
@@ -203,11 +230,11 @@ export const TopNavbar: React.FC = () => {
           {/* Quick Resumes Pill */}
           <button
             onClick={() => setShowManagerModal(true)}
-            className="hidden sm:flex items-center gap-1.5 ml-2 px-2.5 py-1.5 rounded-lg bg-slate-800/80 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-slate-300 hover:text-white transition"
+            className="hidden sm:flex items-center gap-1.5 ml-2 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/80 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition"
           >
-            <Layers className="w-3.5 h-3.5 text-indigo-400" />
+            <Layers className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400" />
             <span>My Resumes</span>
-            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-700 text-slate-200">
+            <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
               {resumes.length}
             </span>
           </button>
@@ -217,11 +244,11 @@ export const TopNavbar: React.FC = () => {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setActiveTab('target')}
-            className="group flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/80 text-xs font-medium text-slate-200 transition"
+            className="group flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800/70 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-xs font-medium text-slate-700 dark:text-slate-200 transition"
             title="Click to view ATS keyword breakdown & optimize"
           >
-            <Target className="w-3.5 h-3.5 text-blue-400 group-hover:rotate-45 transition-transform" />
-            <span className="max-w-[130px] md:max-w-[180px] truncate text-slate-200">
+            <Target className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 group-hover:rotate-45 transition-transform" />
+            <span className="max-w-[130px] md:max-w-[180px] truncate text-slate-800 dark:text-slate-200 font-semibold">
               {resumeData.jobTarget.targetRoleTitle || 'Set Target Role'}
             </span>
 
@@ -229,10 +256,10 @@ export const TopNavbar: React.FC = () => {
             <div
               className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold border transition ${
                 atsScore >= 80
-                  ? 'bg-emerald-950/70 text-emerald-300 border-emerald-800/80'
+                  ? 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/80'
                   : atsScore >= 65
-                  ? 'bg-amber-950/70 text-amber-300 border-amber-800/80'
-                  : 'bg-rose-950/70 text-rose-300 border-rose-800/80'
+                  ? 'bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-800/80'
+                  : 'bg-rose-100 dark:bg-rose-950/70 text-rose-800 dark:text-rose-300 border-rose-300 dark:border-rose-800/80'
               }`}
             >
               <span className="text-[9px] font-mono opacity-70">ATS</span>
@@ -247,9 +274,9 @@ export const TopNavbar: React.FC = () => {
           <button
             onClick={() => setShowUploadModal(true)}
             title="Import existing PDF, DOCX, or TXT resume"
-            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/80 text-xs font-semibold text-slate-300 hover:text-white transition"
+            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/70 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition"
           >
-            <Upload className="w-3.5 h-3.5 text-blue-400" />
+            <Upload className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
             <span>Import</span>
           </button>
 
@@ -257,9 +284,9 @@ export const TopNavbar: React.FC = () => {
           <button
             onClick={handleLoadSample}
             title="Load sample professional data"
-            className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/70 hover:bg-slate-800 border border-slate-700/80 text-xs font-medium text-slate-300 hover:text-white transition"
+            className="hidden md:flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/70 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700/80 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition"
           >
-            <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
+            <RefreshCw className="w-3.5 h-3.5 text-slate-500 dark:text-slate-400" />
             <span>Sample</span>
           </button>
 
@@ -269,72 +296,29 @@ export const TopNavbar: React.FC = () => {
             title={hasApiKey ? 'Settings & Security (Active)' : 'Configure Gemini API Key & Admin Security'}
             className={`relative p-2 rounded-xl border transition ${
               hasApiKey
-                ? 'bg-blue-950/50 border-blue-800/80 text-blue-300 hover:bg-blue-900/60'
-                : 'bg-slate-800/70 border-slate-700/80 text-slate-400 hover:text-white hover:bg-slate-800'
+                ? 'bg-blue-50 dark:bg-blue-950/50 border-blue-200 dark:border-blue-800/80 text-blue-600 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/60'
+                : 'bg-slate-100 dark:bg-slate-800/70 border-slate-200 dark:border-slate-700/80 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
             }`}
           >
             <Key className="w-4 h-4" />
             {hasApiKey && (
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-400 ring-2 ring-slate-900" />
+              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
             )}
           </button>
 
-          {/* Lock Workspace Admin Button */}
+          {/* Theme Toggle Button */}
           <button
-            onClick={() => {
-              logoutAdmin();
-              toast.info('Workspace Locked', 'Master admin session ended.');
-            }}
-            title="Lock Workspace (Admin Logout)"
-            className="p-2 rounded-xl border border-slate-700/80 bg-slate-800/70 text-slate-400 hover:text-rose-400 hover:bg-slate-800 hover:border-rose-900/50 transition"
+            type="button"
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'Switch to Light Mode (Ctrl+D)' : 'Switch to Dark Mode (Ctrl+D)'}
+            className="p-2 rounded-xl border border-slate-200 dark:border-slate-700/80 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800/70 dark:hover:bg-slate-800 text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white transition cursor-pointer"
           >
-            <Lock className="w-4 h-4" />
+            {theme === 'dark' ? (
+              <Sun className="w-4 h-4 text-amber-400 transition-transform hover:rotate-45" />
+            ) : (
+              <Moon className="w-4 h-4 text-slate-700 transition-transform hover:-rotate-12" />
+            )}
           </button>
-
-          {/* Authenticated Guest Session Pill & Logout Dropdown */}
-          {session && (
-            <div className="relative">
-              <button
-                onClick={() => setShowGuestMenu(!showGuestMenu)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-emerald-500/40 text-xs font-semibold text-slate-200 transition shadow-sm cursor-pointer"
-                title={`Authenticated Guest: ${user?.email || 'Active'}`}
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="hidden sm:inline text-emerald-300">Guest Session</span>
-                <ChevronDown className="w-3 h-3 text-slate-400" />
-              </button>
-
-              {showGuestMenu && (
-                <>
-                  <div
-                    className="fixed inset-0 z-30"
-                    onClick={() => setShowGuestMenu(false)}
-                  />
-                  <div className="absolute right-0 mt-2 w-60 bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-xl shadow-2xl p-2 z-40 space-y-1.5 animate-in fade-in zoom-in-95">
-                    <div className="px-2.5 py-1.5 border-b border-slate-800 text-[11px]">
-                      <div className="text-slate-400 text-[10px] uppercase font-semibold tracking-wider">
-                        Signed in as Guest
-                      </div>
-                      <div className="font-semibold text-slate-200 truncate mt-0.5">
-                        {user?.email || 'Authorized Tester'}
-                      </div>
-                    </div>
-                    <button
-                      onClick={async () => {
-                        setShowGuestMenu(false);
-                        await logoutGuest();
-                        toast.info('Session Ended', 'Guest session logged out.');
-                      }}
-                      className="w-full flex items-center gap-2 px-2.5 py-2 text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 rounded-lg transition text-left cursor-pointer"
-                    >
-                      <LogOut className="w-3.5 h-3.5" />
-                      <span>End Session / Log Out</span>
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
 
           {/* Export Dropdown Group */}
           <div className="relative">
@@ -342,7 +326,7 @@ export const TopNavbar: React.FC = () => {
               <button
                 onClick={handlePdfExport}
                 disabled={isExportingPdf}
-                className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-bold text-white rounded-l-[10px] hover:bg-white/10 active:scale-98 transition disabled:opacity-50"
+                className="flex items-center gap-2 px-3.5 py-1.5 text-xs font-bold text-white rounded-l-[10px] hover:bg-white/10 active:scale-98 transition disabled:opacity-50 cursor-pointer"
               >
                 {isExportingPdf ? (
                   <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -354,7 +338,7 @@ export const TopNavbar: React.FC = () => {
 
               <button
                 onClick={() => setShowExportMenu(!showExportMenu)}
-                className="px-1.5 py-2 border-l border-white/20 text-white hover:bg-white/10 rounded-r-[10px] transition"
+                className="px-1.5 py-2 border-l border-white/20 text-white hover:bg-white/10 rounded-r-[10px] transition cursor-pointer"
                 title="More export options"
               >
                 <ChevronDown className="w-3.5 h-3.5" />
@@ -368,14 +352,14 @@ export const TopNavbar: React.FC = () => {
                   className="fixed inset-0 z-30"
                   onClick={() => setShowExportMenu(false)}
                 />
-                <div className="absolute right-0 mt-2 w-48 bg-slate-900/95 backdrop-blur-xl border border-slate-800 rounded-xl shadow-2xl py-1.5 z-40 space-y-1">
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200 dark:border-slate-800 rounded-xl shadow-2xl py-1.5 z-40 space-y-1">
                   <button
                     onClick={handleDocxExport}
                     disabled={isExportingDocx}
                     title="Download Word"
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800 hover:text-white transition cursor-pointer"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
                   >
-                    <FileText className="w-4 h-4 text-blue-400" />
+                    <FileText className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                     <span>Download Word (.docx)</span>
                   </button>
 
@@ -385,9 +369,9 @@ export const TopNavbar: React.FC = () => {
                       toast.info('Opening Vector Print', 'In print dialog, choose Save as PDF for vector text.');
                       setTimeout(() => window.print(), 300);
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800 hover:text-white transition"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
                   >
-                    <Printer className="w-4 h-4 text-purple-400" />
+                    <Printer className="w-4 h-4 text-purple-500 dark:text-purple-400" />
                     <span>Print / Native Vector PDF</span>
                   </button>
 
@@ -397,9 +381,9 @@ export const TopNavbar: React.FC = () => {
                       setShowExportMenu(false);
                       toast.success('Backup Saved', 'Resume data exported to JSON.');
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800 hover:text-white transition"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
                   >
-                    <Download className="w-4 h-4 text-emerald-400" />
+                    <Download className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                     <span>Backup (.json)</span>
                   </button>
 
@@ -409,17 +393,94 @@ export const TopNavbar: React.FC = () => {
                       setShowExportMenu(false);
                       toast.success('Clean Canvas', 'Kept your contact info; cleared previous job content.');
                     }}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800 hover:text-white transition"
+                    className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white transition cursor-pointer"
                   >
-                    <RefreshCw className="w-4 h-4 text-amber-400" />
+                    <RefreshCw className="w-4 h-4 text-amber-500 dark:text-amber-400" />
                     <span>Clear to Clean Canvas</span>
                   </button>
 
-                  <label className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-200 hover:bg-slate-800 hover:text-white cursor-pointer transition">
-                    <Upload className="w-4 h-4 text-indigo-400" />
+                  <label className="w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white cursor-pointer transition">
+                    <Upload className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
                     <span>Restore (.json)</span>
                     <input type="file" accept=".json" onChange={handleJsonUpload} className="hidden" />
                   </label>
+                </div>
+              </>
+            )}
+          </div>
+
+          {/* User Profile Avatar & Session Dropdown Menu */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowProfileMenu(!showProfileMenu)}
+              className="relative p-0.5 rounded-full ring-2 ring-transparent hover:ring-blue-500/50 transition cursor-pointer"
+              title={`Account: ${user?.email || 'Active Session'}`}
+            >
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 text-white font-semibold text-xs flex items-center justify-center shadow-md">
+                {(user?.email?.[0] || userProfile?.fullName?.[0] || 'U').toUpperCase()}
+              </div>
+              <span className="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-2 ring-white dark:ring-slate-900" />
+            </button>
+
+            {showProfileMenu && (
+              <>
+                <div
+                  className="fixed inset-0 z-30"
+                  onClick={() => setShowProfileMenu(false)}
+                />
+                <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-2 z-40 space-y-1.5 animate-in fade-in zoom-in-95">
+                  <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500">
+                      {session ? 'Active Account' : 'Workstation Session'}
+                    </div>
+                    <div className="text-xs font-semibold text-slate-800 dark:text-slate-200 truncate mt-0.5">
+                      {user?.email || 'Private Local Session'}
+                    </div>
+                  </div>
+
+                  <div className="px-3 py-1.5 flex items-center justify-between text-[11px] bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800/80">
+                    <span className="text-slate-600 dark:text-slate-400 font-medium">Storage Scope</span>
+                    <span className="inline-flex items-center gap-1 font-semibold text-emerald-600 dark:text-emerald-400">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      100% Private Client
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowProfileMenu(false);
+                      setShowShortcutsModal(true);
+                    }}
+                    className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/70 rounded-xl transition cursor-pointer text-left"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Command className="w-3.5 h-3.5 text-blue-500" />
+                      <span>Keyboard Shortcuts</span>
+                    </span>
+                    <kbd className="text-[10px] font-mono px-1.5 py-0.5 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded">
+                      Ctrl+/
+                    </kbd>
+                  </button>
+
+                  <div className="border-t border-slate-100 dark:border-slate-800 my-1" />
+
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setShowProfileMenu(false);
+                      logoutAdmin();
+                      if (session) {
+                        await logoutGuest();
+                      }
+                      toast.info('Session Ended', 'You have been safely logged out. Resumes remain securely in your local browser cache.');
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition text-left cursor-pointer"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>End Session / Log Out</span>
+                  </button>
                 </div>
               </>
             )}
@@ -634,6 +695,54 @@ export const TopNavbar: React.FC = () => {
         isOpen={showUploadModal}
         onClose={() => setShowUploadModal(false)}
       />
+
+      {/* Keyboard Shortcuts Modal */}
+      {showShortcutsModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-2xl shadow-2xl p-5 space-y-4 text-slate-900 dark:text-slate-100">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <div className="flex items-center gap-2 font-bold text-sm">
+                <Command className="w-4 h-4 text-blue-500" />
+                <span>Keyboard Shortcuts</span>
+              </div>
+              <button
+                onClick={() => setShowShortcutsModal(false)}
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2.5 text-xs">
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                <span className="text-slate-700 dark:text-slate-300 font-medium">Quick Save (Local Cache)</span>
+                <kbd className="px-2 py-1 font-mono font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xs">Ctrl + S</kbd>
+              </div>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                <span className="text-slate-700 dark:text-slate-300 font-medium">Toggle Light / Dark Mode</span>
+                <kbd className="px-2 py-1 font-mono font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xs">Ctrl + D</kbd>
+              </div>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                <span className="text-slate-700 dark:text-slate-300 font-medium">Native Vector Print / PDF</span>
+                <kbd className="px-2 py-1 font-mono font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xs">Ctrl + P</kbd>
+              </div>
+              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                <span className="text-slate-700 dark:text-slate-300 font-medium">Show / Hide Shortcuts</span>
+                <kbd className="px-2 py-1 font-mono font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xs">Ctrl + /</kbd>
+              </div>
+            </div>
+
+            <div className="pt-2 text-center">
+              <button
+                onClick={() => setShowShortcutsModal(false)}
+                className="w-full py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 font-semibold text-xs rounded-xl transition cursor-pointer text-slate-800 dark:text-slate-200"
+              >
+                Close Shortcuts
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 };

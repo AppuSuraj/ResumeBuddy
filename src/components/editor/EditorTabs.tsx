@@ -97,19 +97,19 @@ export const EditorTabs: React.FC = () => {
   ];
 
   return (
-    <div className="relative bg-slate-900/90 backdrop-blur-md border-b border-slate-800">
+    <div className="relative bg-white/95 dark:bg-slate-900/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800">
       {/* Dynamic Left Gradient Mask & Back Chevron */}
       {canScrollLeft && (
         <>
-          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent pointer-events-none z-10" />
+          <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-white via-white/80 to-transparent dark:from-slate-900 dark:via-slate-900/80 dark:to-transparent pointer-events-none z-10" />
           <button
             type="button"
             onClick={handleScrollLeft}
-            className="absolute left-1.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 flex items-center justify-center rounded-full bg-slate-800/90 hover:bg-slate-700 text-blue-300 border border-slate-700 shadow-md backdrop-blur-md transition cursor-pointer"
+            className="absolute left-1.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 flex items-center justify-center rounded-full bg-white/90 hover:bg-slate-100 dark:bg-slate-800/90 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-300 border border-slate-200 dark:border-slate-700 shadow-md backdrop-blur-md transition cursor-pointer"
             title="Scroll back left"
             aria-label="Scroll back to previous sections"
           >
-            <ChevronLeft className="w-4 h-4 text-blue-400" />
+            <ChevronLeft className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           </button>
         </>
       )}
@@ -133,13 +133,13 @@ export const EditorTabs: React.FC = () => {
               className={`group relative flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold tracking-wide whitespace-nowrap transition-all duration-200 cursor-pointer ${
                 isActive
                   ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25 ring-1 ring-white/10'
-                  : 'bg-slate-800/60 text-slate-300 hover:text-white hover:bg-slate-700/60 border border-slate-700/40'
+                  : 'bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white dark:hover:bg-slate-700/60 border border-slate-200 dark:border-slate-700/40'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-200'}`} />
+              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200'}`} />
               <span>{tab.label}</span>
               {isFilled && !['templates', 'style'].includes(tab.id) && (
-                <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white' : 'bg-emerald-400'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-white' : 'bg-emerald-500 dark:bg-emerald-400'}`} />
               )}
             </button>
           );
@@ -149,15 +149,15 @@ export const EditorTabs: React.FC = () => {
       {/* Dynamic Right Gradient Mask & Forward Chevron */}
       {canScrollRight && (
         <>
-          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-slate-900 via-slate-900/80 to-transparent pointer-events-none z-10" />
+          <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-white via-white/80 to-transparent dark:from-slate-900 dark:via-slate-900/80 dark:to-transparent pointer-events-none z-10" />
           <button
             type="button"
             onClick={handleScrollRight}
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 flex items-center justify-center rounded-full bg-slate-800/90 hover:bg-slate-700 text-blue-300 border border-slate-700 shadow-md backdrop-blur-md transition cursor-pointer"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 z-20 w-7 h-7 flex items-center justify-center rounded-full bg-white/90 hover:bg-slate-100 dark:bg-slate-800/90 dark:hover:bg-slate-700 text-blue-600 dark:text-blue-300 border border-slate-200 dark:border-slate-700 shadow-md backdrop-blur-md transition cursor-pointer"
             title="Scroll forward right"
             aria-label="Scroll forward to more sections"
           >
-            <ChevronRight className="w-4 h-4 text-blue-400" />
+            <ChevronRight className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           </button>
         </>
       )}
