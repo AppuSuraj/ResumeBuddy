@@ -47,14 +47,14 @@ export const CustomSectionForm: React.FC = () => {
   };
 
   return (
-    <div className="p-4 space-y-4 text-slate-200">
+    <div className="p-4 space-y-4 text-slate-800 dark:text-slate-200">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <PlusCircle className="w-4 h-4 text-blue-400" />
+          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <PlusCircle className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             Custom Sections
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Add certifications, publications, honors, volunteer work, or spoken languages.
           </p>
         </div>
@@ -67,11 +67,11 @@ export const CustomSectionForm: React.FC = () => {
       </div>
 
       {customSections.length === 0 ? (
-        <div className="p-8 border border-dashed border-slate-800 rounded-xl text-center text-slate-400 text-xs space-y-2">
+        <div className="p-8 border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl text-center text-slate-500 dark:text-slate-400 text-xs space-y-2 bg-slate-50/50 dark:bg-slate-900/30">
           <p>No custom sections added yet.</p>
           <button
             onClick={handleAddSection}
-            className="px-3 py-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 bg-blue-950/40 rounded-lg border border-blue-900/60 inline-flex items-center gap-1"
+            className="px-3 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900/60 inline-flex items-center gap-1"
           >
             <Plus className="w-3.5 h-3.5" /> Add Certifications & Honors
           </button>
@@ -79,18 +79,18 @@ export const CustomSectionForm: React.FC = () => {
       ) : (
         <div className="space-y-4">
           {customSections.map((cs) => (
-            <div key={cs.id} className="bg-slate-900/80 border border-slate-800/80 rounded-xl p-4 space-y-3 shadow-sm">
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
+            <div key={cs.id} className="bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800/80 rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
+              <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800/80 pb-2.5">
                 <input
                   type="text"
                   value={cs.sectionTitle}
                   onChange={(e) => updateCustomSection(cs.id, { sectionTitle: e.target.value })}
                   placeholder="e.g. Certifications, Publications, Languages"
-                  className="bg-slate-800/80 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 w-3/4"
+                  className="bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 w-3/4 transition shadow-inner"
                 />
                 <button
                   onClick={() => handleDeleteSection(cs.id, cs.sectionTitle)}
-                  className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 rounded-lg transition"
+                  className="p-1.5 text-rose-500 dark:text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition"
                   title="Delete Section"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -99,12 +99,12 @@ export const CustomSectionForm: React.FC = () => {
 
               <div className="space-y-3">
                 {cs.items.map((item, idx) => (
-                  <div key={item.id} className="bg-slate-800/60 border border-slate-700/70 p-3 rounded-xl space-y-2.5">
+                  <div key={item.id} className="bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/70 p-3 rounded-xl space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono uppercase text-slate-400">Item #{idx + 1}</span>
+                      <span className="text-[10px] font-mono uppercase text-slate-500 dark:text-slate-400">Item #{idx + 1}</span>
                       <button
                         onClick={() => handleRemoveItem(cs.id, item.id)}
-                        className="text-slate-400 hover:text-rose-400 p-1"
+                        className="text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 p-1"
                       >
                         <X className="w-3.5 h-3.5" />
                       </button>
@@ -112,7 +112,7 @@ export const CustomSectionForm: React.FC = () => {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                       <div>
-                        <label className="block text-[10px] font-semibold text-slate-400 mb-1">Title / Name</label>
+                        <label className="block text-[10px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Title / Name</label>
                         <input
                           type="text"
                           value={item.title}
@@ -123,12 +123,12 @@ export const CustomSectionForm: React.FC = () => {
                             updateCustomSection(cs.id, { items: updatedItems });
                           }}
                           placeholder="AWS Certified Solutions Architect"
-                          className="w-full bg-slate-900 border border-slate-700/80 rounded-lg px-2.5 py-1 text-xs text-white"
+                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-lg px-2.5 py-1 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-semibold text-slate-400 mb-1">Subtitle / Issuer</label>
+                        <label className="block text-[10px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Subtitle / Issuer</label>
                         <input
                           type="text"
                           value={item.subtitle || ''}
@@ -139,14 +139,14 @@ export const CustomSectionForm: React.FC = () => {
                             updateCustomSection(cs.id, { items: updatedItems });
                           }}
                           placeholder="Amazon Web Services"
-                          className="w-full bg-slate-900 border border-slate-700/80 rounded-lg px-2.5 py-1 text-xs text-white"
+                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-lg px-2.5 py-1 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500"
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
                       <div>
-                        <label className="block text-[10px] font-semibold text-slate-400 mb-1">Date / Year</label>
+                        <label className="block text-[10px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Date / Year</label>
                         <input
                           type="text"
                           value={item.date || ''}
@@ -157,12 +157,12 @@ export const CustomSectionForm: React.FC = () => {
                             updateCustomSection(cs.id, { items: updatedItems });
                           }}
                           placeholder="2023"
-                          className="w-full bg-slate-900 border border-slate-700/80 rounded-lg px-2.5 py-1 text-xs text-white"
+                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-lg px-2.5 py-1 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-semibold text-slate-400 mb-1">Details (Optional)</label>
+                        <label className="block text-[10px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Details (Optional)</label>
                         <input
                           type="text"
                           value={item.description || ''}
@@ -173,7 +173,7 @@ export const CustomSectionForm: React.FC = () => {
                             updateCustomSection(cs.id, { items: updatedItems });
                           }}
                           placeholder="Credential ID: 123456"
-                          className="w-full bg-slate-900 border border-slate-700/80 rounded-lg px-2.5 py-1 text-xs text-white"
+                          className="w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/80 rounded-lg px-2.5 py-1 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500"
                         />
                       </div>
                     </div>
@@ -182,7 +182,7 @@ export const CustomSectionForm: React.FC = () => {
 
                 <button
                   onClick={() => handleAddItemToSection(cs.id)}
-                  className="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1 pt-1"
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold flex items-center gap-1 pt-1"
                 >
                   <Plus className="w-3.5 h-3.5" /> Add Item to {cs.sectionTitle}
                 </button>

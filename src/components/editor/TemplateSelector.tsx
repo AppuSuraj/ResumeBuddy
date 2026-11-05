@@ -243,14 +243,14 @@ export const TemplateSelector: React.FC = () => {
   };
 
   return (
-    <div className="p-4 space-y-4 text-slate-200">
+    <div className="p-4 space-y-4 text-slate-800 dark:text-slate-200">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <LayoutGrid className="w-4 h-4 text-blue-400" />
+          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <LayoutGrid className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             Resume Template Gallery ({TEMPLATE_METADATA.length} Styles)
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             ATS-optimized designs crafted for technology, business, and executive roles.
           </p>
         </div>
@@ -263,17 +263,17 @@ export const TemplateSelector: React.FC = () => {
             <div
               key={tmpl.id}
               onClick={() => handleSelectTemplate(tmpl.id, tmpl.name)}
-              className={`p-3.5 rounded-xl border cursor-pointer transition-all duration-200 flex flex-col justify-between group ${
+              className={`p-4 rounded-2xl border cursor-pointer transition-all duration-200 flex flex-col justify-between group shadow-xs ${
                 isSelected
-                  ? 'bg-blue-950/60 border-blue-500/80 shadow-lg shadow-blue-500/20 ring-2 ring-blue-500'
-                  : 'bg-slate-900/80 border-slate-800/80 hover:border-slate-700 hover:bg-slate-800/60'
+                  ? 'bg-blue-50/80 dark:bg-blue-950/60 border-blue-500/80 shadow-md shadow-blue-500/10 ring-2 ring-blue-500'
+                  : 'bg-white dark:bg-slate-900/80 border-slate-200/90 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700 hover:bg-slate-50/60 dark:hover:bg-slate-800/60'
               }`}
             >
               <div>
                 {/* Header row: Name, Active Check, and ATS Safety Badge */}
                 <div className="flex justify-between items-start gap-2 mb-2">
                   <div className="flex items-center gap-1.5 flex-1 min-w-0">
-                    <h3 className="text-xs font-bold text-white flex items-center gap-1.5 group-hover:text-blue-300 transition-colors truncate">
+                    <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5 group-hover:text-blue-600 dark:group-hover:text-blue-300 transition-colors truncate">
                       {tmpl.name}
                     </h3>
                     {isSelected && (
@@ -286,11 +286,11 @@ export const TemplateSelector: React.FC = () => {
                   {/* ATS Parser Safety Badge & Compatibility Tooltip */}
                   {tmpl.atsType === 'safe' ? (
                     <div className="relative group/badge shrink-0">
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-950/70 text-emerald-300 border border-emerald-800/80 flex items-center gap-1 cursor-help transition">
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/70 dark:text-emerald-300 dark:border-emerald-800/80 flex items-center gap-1 cursor-help transition">
                         <span>🤖 100% ATS Safe</span>
                       </span>
                       <div className="pointer-events-none absolute bottom-full right-0 mb-1.5 hidden group-hover/badge:flex flex-col items-end z-30">
-                        <div className="bg-slate-900 border border-slate-700 text-slate-200 text-[10px] rounded-lg px-2.5 py-1.5 shadow-xl max-w-xs leading-relaxed text-left">
+                        <div className="bg-slate-900 border border-slate-700 text-slate-100 text-[10px] rounded-lg px-2.5 py-1.5 shadow-xl max-w-xs leading-relaxed text-left">
                           Single-stream hierarchy guaranteed to pass enterprise ATS scanners (Workday, Taleo, Greenhouse).
                         </div>
                         <div className="w-2 h-2 bg-slate-900 border-r border-b border-slate-700 rotate-45 mr-3 -mt-1" />
@@ -298,11 +298,11 @@ export const TemplateSelector: React.FC = () => {
                     </div>
                   ) : (
                     <div className="relative group/badge shrink-0">
-                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-amber-950/50 text-amber-300 border border-amber-800/60 flex items-center gap-1 cursor-help transition">
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800/60 flex items-center gap-1 cursor-help transition">
                         <span>👤 Recruiter / Human Eye</span>
                       </span>
                       <div className="pointer-events-none absolute bottom-full right-0 mb-1.5 hidden group-hover/badge:flex flex-col items-end z-30">
-                        <div className="bg-slate-900 border border-slate-700 text-slate-200 text-[10px] rounded-lg px-2.5 py-1.5 shadow-xl max-w-xs leading-relaxed text-left">
+                        <div className="bg-slate-900 border border-slate-700 text-slate-100 text-[10px] rounded-lg px-2.5 py-1.5 shadow-xl max-w-xs leading-relaxed text-left">
                           Visual multi-column / sidebar design crafted for direct recruiter emails, portfolios, and human review.
                         </div>
                         <div className="w-2 h-2 bg-slate-900 border-r border-b border-slate-700 rotate-45 mr-3 -mt-1" />
@@ -313,21 +313,21 @@ export const TemplateSelector: React.FC = () => {
 
                 {/* Visual Skeleton Wireframe (Aspect ratio ~ 1 : 1.3) */}
                 <div className="flex justify-center my-2">
-                  <div className="w-28 aspect-[1/1.3] bg-slate-950 rounded-lg border border-slate-800/90 p-2 shadow-inner overflow-hidden group-hover:border-slate-700 transition">
+                  <div className="w-28 aspect-[1/1.3] bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800/90 p-2 shadow-inner overflow-hidden group-hover:border-slate-300 dark:group-hover:border-slate-700 transition">
                     <TemplateWireframe templateId={tmpl.id} />
                   </div>
                 </div>
 
-                <p className="text-[11px] text-slate-400 mt-2 leading-relaxed">{tmpl.description}</p>
+                <p className="text-[11px] text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">{tmpl.description}</p>
               </div>
 
-              <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between">
+              <div className="mt-3 pt-2.5 border-t border-slate-200/80 dark:border-slate-800/80 flex items-center justify-between">
                 <span className="text-[10px] text-slate-500 font-mono">
                   {tmpl.category} • {tmpl.id}
                 </span>
                 <span
                   className={`text-[11px] font-bold transition ${
-                    isSelected ? 'text-blue-400' : 'text-slate-400 group-hover:text-white'
+                    isSelected ? 'text-blue-600 dark:text-blue-400' : 'text-slate-500 dark:text-slate-400 group-hover:text-slate-900 dark:group-hover:text-white'
                   }`}
                 >
                   {isSelected ? 'Active Template' : 'Use Template'}

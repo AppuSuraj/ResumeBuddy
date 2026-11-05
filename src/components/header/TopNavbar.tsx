@@ -490,18 +490,18 @@ export const TopNavbar: React.FC = () => {
 
       {/* Settings & Security Modal */}
       {showAiModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-slate-900 border border-slate-800 text-slate-100 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
             {/* Modal Header & Tabs */}
-            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
-              <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800">
+            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80 pb-3">
+              <div className="flex bg-slate-100 dark:bg-slate-950 p-1 rounded-xl border border-slate-200 dark:border-slate-800">
                 <button
                   type="button"
                   onClick={() => setSettingsTab('ai')}
                   className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg transition ${
                     settingsTab === 'ai'
                       ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
                   }`}
                 >
                   <Key className="w-3.5 h-3.5" />
@@ -513,7 +513,7 @@ export const TopNavbar: React.FC = () => {
                   className={`flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-lg transition ${
                     settingsTab === 'security'
                       ? 'bg-blue-600 text-white shadow-sm'
-                      : 'text-slate-400 hover:text-white'
+                      : 'text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white'
                   }`}
                 >
                   <Shield className="w-3.5 h-3.5" />
@@ -521,7 +521,7 @@ export const TopNavbar: React.FC = () => {
                 </button>
               </div>
 
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-300 border border-blue-200 dark:border-blue-500/30">
                 {settingsTab === 'ai' ? 'Gemini 2.5' : 'SHA-256'}
               </span>
             </div>
@@ -529,14 +529,14 @@ export const TopNavbar: React.FC = () => {
             {/* Tab 1: AI Engine Configuration */}
             {settingsTab === 'ai' && (
               <>
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                   ResumeBuddy has an offline AI engine built right in, so you can tailor summaries and bullets with zero setup. 
                   To connect live Gemini LLM capabilities, paste your Google AI Studio API key below.
                 </p>
 
                 <form onSubmit={handleSaveApiKey} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1.5">
+                    <label className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5">
                       Gemini API Key (Optional)
                     </label>
                     <input
@@ -544,28 +544,28 @@ export const TopNavbar: React.FC = () => {
                       value={apiKeyInput}
                       onChange={(e) => setApiKeyInput(e.target.value)}
                       placeholder="AIzaSy..."
-                      className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500"
+                      className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs font-mono text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
                     />
                   </div>
 
                   {savedKeySuccess && (
-                    <div className="p-2.5 rounded-xl bg-emerald-950/80 border border-emerald-800 text-emerald-300 text-xs flex items-center gap-2">
-                      <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <div className="p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2">
+                      <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                       <span>API preference updated successfully!</span>
                     </div>
                   )}
 
-                  <div className="flex justify-end gap-2 pt-2 border-t border-slate-800/80">
+                  <div className="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-800/80">
                     <button
                       type="button"
                       onClick={() => setShowAiModal(false)}
-                      className="px-3.5 py-1.5 text-xs text-slate-400 hover:text-white transition"
+                      className="px-3.5 py-1.5 text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition cursor-pointer"
                     >
                       Close
                     </button>
                     <button
                       type="submit"
-                      className="px-4 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-md transition"
+                      className="px-4 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-md transition cursor-pointer"
                     >
                       Save Settings
                     </button>
@@ -577,7 +577,7 @@ export const TopNavbar: React.FC = () => {
             {/* Tab 2: Admin Security & Master Password */}
             {settingsTab === 'security' && (
               <>
-                <p className="text-xs text-slate-400 leading-relaxed">
+                <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
                   Manage your master admin credentials. Only the SHA-256 hash is verified in-browser to protect your GitHub Pages deployment.
                 </p>
 
@@ -585,14 +585,14 @@ export const TopNavbar: React.FC = () => {
                   <div
                     className={`p-2.5 rounded-xl text-xs flex items-center gap-2 ${
                       securityMsg.isError
-                        ? 'bg-rose-950/80 border border-rose-800 text-rose-300'
-                        : 'bg-emerald-950/80 border border-emerald-800 text-emerald-300'
+                        ? 'bg-rose-50 dark:bg-rose-950/80 border border-rose-200 dark:border-rose-800 text-rose-700 dark:text-rose-300'
+                        : 'bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
                     }`}
                   >
                     {securityMsg.isError ? (
                       <span className="font-bold">•</span>
                     ) : (
-                      <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
                     )}
                     <span>{securityMsg.text}</span>
                   </div>
@@ -600,7 +600,7 @@ export const TopNavbar: React.FC = () => {
 
                 <form onSubmit={handleChangePassword} className="space-y-3">
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       Current Master Password
                     </label>
                     <input
@@ -609,12 +609,12 @@ export const TopNavbar: React.FC = () => {
                       onChange={(e) => setCurrentPasswordInput(e.target.value)}
                       placeholder="Enter current password..."
                       required
-                      className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                      className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-inner"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       New Master Password
                     </label>
                     <input
@@ -623,12 +623,12 @@ export const TopNavbar: React.FC = () => {
                       onChange={(e) => setNewPasswordInput(e.target.value)}
                       placeholder="Enter new password (min 4 chars)..."
                       required
-                      className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                      className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-inner"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                    <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-1">
                       Confirm New Master Password
                     </label>
                     <input
@@ -637,11 +637,11 @@ export const TopNavbar: React.FC = () => {
                       onChange={(e) => setConfirmNewPasswordInput(e.target.value)}
                       placeholder="Confirm new password..."
                       required
-                      className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60"
+                      className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 shadow-inner"
                     />
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-800/80 gap-2">
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800/80 gap-2">
                     <button
                       type="button"
                       onClick={() => {
@@ -649,7 +649,7 @@ export const TopNavbar: React.FC = () => {
                         logoutAdmin();
                         toast.info('Workspace Locked', 'Session ended.');
                       }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 rounded-xl border border-rose-900/40 transition"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-900/40 transition cursor-pointer"
                     >
                       <Lock className="w-3.5 h-3.5" />
                       <span>Lock Now</span>
@@ -659,14 +659,14 @@ export const TopNavbar: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => setShowAiModal(false)}
-                        className="px-3 py-1.5 text-xs text-slate-400 hover:text-white transition"
+                        className="px-3 py-1.5 text-xs text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white transition cursor-pointer"
                       >
                         Close
                       </button>
                       <button
                         type="submit"
                         disabled={isUpdatingPassword}
-                        className="px-4 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-1.5"
+                        className="px-4 py-1.5 text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-md transition disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
                       >
                         {isUpdatingPassword ? (
                           <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />

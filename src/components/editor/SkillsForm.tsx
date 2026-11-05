@@ -315,44 +315,44 @@ export const SkillsForm: React.FC = () => {
   };
 
   return (
-    <div className="p-4 space-y-5 text-slate-200">
+    <div className="p-4 space-y-5 text-slate-800 dark:text-slate-200">
       {/* Header with Gemini Status */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-bold text-white flex items-center gap-2">
-              <Wrench className="w-4 h-4 text-blue-400" />
+            <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <Wrench className="w-4 h-4 text-blue-500 dark:text-blue-400" />
               Skills & Core Competencies
             </h2>
             {isGeminiConnected ? (
-              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-950/70 border border-emerald-500/40 text-[10px] font-semibold text-emerald-300">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/70 border border-emerald-200 dark:border-emerald-500/40 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 dark:bg-emerald-400 animate-pulse" />
                 Gemini 2.5 Active
               </span>
             ) : (
               <span
-                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-[10px] text-slate-400"
+                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-[10px] text-slate-600 dark:text-slate-400"
                 title="Connect API key in top-right for Google Gemini integration"
               >
-                <KeyRound className="w-3 h-3 text-amber-400" />
+                <KeyRound className="w-3 h-3 text-amber-500 dark:text-amber-400" />
                 Gemini Ready
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Target Role: <strong className="text-slate-200">"{roleTitle}"</strong> • Real-time ATS match scoring.
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            Target Role: <strong className="text-slate-800 dark:text-slate-200">"{roleTitle}"</strong> • Real-time ATS match scoring.
           </p>
         </div>
       </div>
 
       {/* 1. Fast Standalone Skill Input (No Category Prefix on Resume) */}
-      <div className="bg-slate-900/90 border border-slate-800/90 rounded-2xl p-4 space-y-3 shadow-md">
+      <div className="bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-bold text-white flex items-center gap-2">
-            <Tag className="w-3.5 h-3.5 text-blue-400" />
+          <label className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Tag className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
             <span>Add Individual Skills</span>
           </label>
-          <span className="text-[11px] text-slate-400">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">
             {allCurrentSkills.length} active competencies on resume
           </span>
         </div>
@@ -370,7 +370,7 @@ export const SkillsForm: React.FC = () => {
                 }
               }}
               placeholder="Type a skill (e.g. React, TypeScript, Docker) and press Enter..."
-              className="w-full bg-slate-950/80 border border-slate-700/80 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 shadow-inner"
+              className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 shadow-inner transition"
             />
           </div>
           <button
@@ -385,7 +385,7 @@ export const SkillsForm: React.FC = () => {
 
         {/* Active Skills Tag Cloud */}
         {allCurrentSkills.length > 0 && (
-          <div className="pt-2 border-t border-slate-800/80">
+          <div className="pt-2.5 border-t border-slate-100 dark:border-slate-800/80">
             <div className="flex flex-wrap gap-1.5 min-h-[32px]">
               {allCurrentSkills.map((skill, sIdx) => {
                 const isRecentlyAdded = recentlyAddedSkills?.includes(skill.trim().toLowerCase());
@@ -394,20 +394,20 @@ export const SkillsForm: React.FC = () => {
                     key={`${skill}-${sIdx}`}
                     className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition ${
                       isRecentlyAdded
-                        ? 'bg-emerald-950/80 text-emerald-200 border border-emerald-500/70 shadow-sm shadow-emerald-500/20'
-                        : 'bg-slate-800/90 text-slate-200 border border-slate-700/80 hover:border-slate-600'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-200 border border-emerald-300 dark:border-emerald-500/70 shadow-xs'
+                        : 'bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800/90 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80 dark:hover:border-slate-600'
                     }`}
                   >
                     <span>{skill}</span>
                     {isRecentlyAdded && (
-                      <span className="px-1.5 py-0.2 text-[9px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded animate-pulse">
+                      <span className="px-1.5 py-0.2 text-[9px] font-bold bg-emerald-100 dark:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-500/40 rounded animate-pulse">
                         New
                       </span>
                     )}
                     <button
                       type="button"
                       onClick={() => handleRemoveSkill(skill)}
-                      className="text-slate-400 hover:text-rose-400 transition ml-0.5 cursor-pointer"
+                      className="text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition ml-0.5 cursor-pointer"
                       title="Remove skill"
                     >
                       <X className="w-3 h-3" />
@@ -421,16 +421,16 @@ export const SkillsForm: React.FC = () => {
       </div>
 
       {/* 2. Dynamic "Recommended for Your Target Role" Chip Cloud */}
-      <div className="bg-slate-900/70 border border-slate-800/80 rounded-2xl p-4 space-y-3.5 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800/80 pb-2.5">
+      <div className="bg-white dark:bg-slate-900/70 border border-slate-200/90 dark:border-slate-800/80 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800/80 pb-2.5">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-emerald-400" />
+            <Sparkles className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
             <div>
-              <h3 className="text-xs font-bold text-white flex items-center gap-1.5">
+              <h3 className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                 <span>Recommended for</span>
-                <span className="text-emerald-300 font-semibold truncate max-w-[200px]">"{roleTitle}"</span>
+                <span className="text-emerald-700 dark:text-emerald-300 font-semibold truncate max-w-[200px]">"{roleTitle}"</span>
               </h3>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 Click any competency to add directly to your resume without category clutter.
               </p>
             </div>
@@ -439,7 +439,7 @@ export const SkillsForm: React.FC = () => {
           <button
             type="button"
             onClick={handleAddAllMissingRecommendations}
-            className="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 hover:underline transition cursor-pointer self-start sm:self-auto"
+            className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:underline transition cursor-pointer self-start sm:self-auto"
           >
             + Add All Missing to Resume
           </button>
@@ -456,8 +456,8 @@ export const SkillsForm: React.FC = () => {
                 onClick={() => setSelectedDomain(domain)}
                 className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition shrink-0 cursor-pointer ${
                   isSelected
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-slate-800/60 text-slate-400 hover:text-slate-200 hover:bg-slate-800'
+                    ? 'bg-blue-600 text-white shadow-xs'
+                    : 'bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800/60 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 dark:hover:bg-slate-800'
                 }`}
               >
                 {domain}
@@ -473,10 +473,10 @@ export const SkillsForm: React.FC = () => {
             return isAdded ? (
               <span
                 key={recSkill}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-950/60 text-emerald-300 border border-emerald-800/80 text-xs font-semibold shadow-sm select-none"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/80 text-xs font-semibold shadow-xs select-none"
                 title="Already added to your resume"
               >
-                <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
                 <span>{recSkill}</span>
               </span>
             ) : (
@@ -484,10 +484,10 @@ export const SkillsForm: React.FC = () => {
                 key={recSkill}
                 type="button"
                 onClick={() => handleAddStandaloneSkill(recSkill)}
-                className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800/80 hover:bg-blue-950/70 text-slate-200 hover:text-blue-200 border border-slate-700/80 hover:border-blue-600/70 text-xs font-medium transition active:scale-95 cursor-pointer shadow-sm"
+                className="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-blue-50 dark:bg-slate-800/80 dark:hover:bg-blue-950/70 text-slate-700 hover:text-blue-700 dark:text-slate-200 dark:hover:text-blue-200 border border-slate-200 hover:border-blue-300 dark:border-slate-700/80 dark:hover:border-blue-600/70 text-xs font-medium transition active:scale-95 cursor-pointer shadow-xs"
                 title={`Click to add "${recSkill}" to resume`}
               >
-                <Plus className="w-3.5 h-3.5 text-blue-400 group-hover:scale-125 transition-transform shrink-0" />
+                <Plus className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 group-hover:scale-125 transition-transform shrink-0" />
                 <span>{recSkill}</span>
               </button>
             );
@@ -496,25 +496,25 @@ export const SkillsForm: React.FC = () => {
       </div>
 
       {/* 3. Collapsible Custom Categories Organizer (Optional, tucked below) */}
-      <div className="border border-slate-800/80 rounded-2xl bg-slate-950/40 overflow-hidden">
+      <div className="border border-slate-200/90 dark:border-slate-800/80 rounded-2xl bg-white dark:bg-slate-950/40 overflow-hidden shadow-xs">
         <button
           type="button"
           onClick={() => setShowCategoryOrganizer(!showCategoryOrganizer)}
-          className="w-full flex items-center justify-between p-3.5 hover:bg-slate-900/50 transition cursor-pointer text-left"
+          className="w-full flex items-center justify-between p-3.5 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition cursor-pointer text-left"
         >
           <div className="flex items-center gap-2">
-            <FolderTree className="w-4 h-4 text-purple-400" />
+            <FolderTree className="w-4 h-4 text-purple-500 dark:text-purple-400" />
             <div>
-              <span className="text-xs font-bold text-white">
+              <span className="text-xs font-bold text-slate-900 dark:text-white">
                 Organize by Custom Categories (Optional)
               </span>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-slate-500 dark:text-slate-400">
                 Group skills into structured blocks (e.g. &quot;Languages&quot;, &quot;Cloud Infrastructure&quot;, &quot;Databases&quot;).
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-slate-400">
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400">
               {customCategories.length === 0
                 ? 'Individual Skills Mode'
                 : `${customCategories.length} Custom ${customCategories.length === 1 ? 'Category' : 'Categories'}`}
@@ -528,11 +528,11 @@ export const SkillsForm: React.FC = () => {
         </button>
 
         {showCategoryOrganizer && (
-          <div className="p-4 border-t border-slate-800/80 space-y-4 bg-slate-900/30">
+          <div className="p-4 border-t border-slate-200 dark:border-slate-800/80 space-y-4 bg-slate-50/50 dark:bg-slate-900/30">
             {customCategories.length === 0 ? (
               <div className="p-6 text-center space-y-3">
-                <p className="text-xs text-slate-400 max-w-md mx-auto leading-relaxed">
-                  You are currently using <strong className="text-white">Individual Skills Mode</strong>. All competencies display directly on your resume as a clean, unified list without category headers.
+                <p className="text-xs text-slate-600 dark:text-slate-400 max-w-md mx-auto leading-relaxed">
+                  You are currently using <strong className="text-slate-900 dark:text-white">Individual Skills Mode</strong>. All competencies display directly on your resume as a clean, unified list without category headers.
                 </p>
                 <p className="text-[11px] text-slate-500 max-w-sm mx-auto">
                   Want to group skills under custom titles (e.g. &quot;Programming Languages&quot;, &quot;Cloud &amp; DevOps&quot;)?
@@ -552,7 +552,7 @@ export const SkillsForm: React.FC = () => {
             ) : (
               <>
                 <div className="flex items-center justify-between">
-                  <span className="text-xs text-slate-400">Custom Category Groups:</span>
+                  <span className="text-xs text-slate-600 dark:text-slate-400">Custom Category Groups:</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -573,7 +573,7 @@ export const SkillsForm: React.FC = () => {
                   return (
                     <div
                       key={cat.id}
-                      className="bg-slate-900/80 border border-slate-800/80 rounded-xl p-3.5 space-y-3 shadow-sm"
+                      className="bg-white dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 rounded-xl p-3.5 space-y-3 shadow-xs"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <input
@@ -581,27 +581,27 @@ export const SkillsForm: React.FC = () => {
                           value={cat.categoryName}
                           onChange={(e) => updateSkillCategory(cat.id, { categoryName: e.target.value })}
                           placeholder="Category Title (e.g. Cloud Infrastructure)"
-                          className="bg-slate-800/80 border border-slate-700/80 rounded-lg px-3 py-1.5 text-xs font-bold text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex-1 max-w-sm"
+                          className="bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 flex-1 max-w-sm"
                         />
                         <div className="flex items-center gap-1.5">
                           <button
                             type="button"
                             onClick={() => handleFetchCategoryAiSuggestions(cat.id)}
                             disabled={isLoadingThis}
-                            className="flex items-center gap-1 text-[11px] font-semibold text-purple-400 hover:text-purple-300 bg-purple-950/40 border border-purple-900/50 px-2 py-1 rounded-lg transition disabled:opacity-50 cursor-pointer"
+                            className="flex items-center gap-1 text-[11px] font-semibold text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-900/50 px-2 py-1 rounded-lg transition disabled:opacity-50 cursor-pointer"
                             title="AI suggest skills for this specific category"
                           >
                             {isLoadingThis ? (
                               <Loader2 className="w-3 h-3 animate-spin" />
                             ) : (
-                              <Sparkles className="w-3 h-3 text-purple-400" />
+                              <Sparkles className="w-3 h-3 text-purple-500 dark:text-purple-400" />
                             )}
                             <span>AI Suggest</span>
                           </button>
                           <button
                             type="button"
                             onClick={() => handleDeleteCustomCategory(cat.id, cat.categoryName)}
-                            className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 rounded-lg transition cursor-pointer"
+                            className="p-1.5 text-rose-500 dark:text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition cursor-pointer"
                             title="Delete Category"
                           >
                             <Trash2 className="w-4 h-4" />
@@ -610,16 +610,16 @@ export const SkillsForm: React.FC = () => {
                       </div>
 
                       {/* Skills tags in this category */}
-                      <div className="flex flex-wrap gap-1.5 min-h-[28px] p-2 bg-slate-950/50 rounded-xl border border-slate-800/60">
+                      <div className="flex flex-wrap gap-1.5 min-h-[28px] p-2 bg-slate-50 dark:bg-slate-950/50 rounded-xl border border-slate-200 dark:border-slate-800/60">
                         {cat.skills.length === 0 ? (
-                          <span className="text-xs text-slate-500 italic p-1">
+                          <span className="text-xs text-slate-400 dark:text-slate-500 italic p-1">
                             No skills in this category. Type below to add.
                           </span>
                         ) : (
                           cat.skills.map((skill, sIdx) => (
                             <span
                               key={sIdx}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-800 text-slate-200 border border-slate-700/80"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700/80"
                             >
                               <span>{skill}</span>
                               <button
@@ -629,7 +629,7 @@ export const SkillsForm: React.FC = () => {
                                     skills: cat.skills.filter((_, i) => i !== sIdx),
                                   });
                                 }}
-                                className="text-slate-400 hover:text-rose-400 transition cursor-pointer"
+                                className="text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition cursor-pointer"
                               >
                                 <X className="w-3 h-3" />
                               </button>
@@ -651,7 +651,7 @@ export const SkillsForm: React.FC = () => {
                             }
                           }}
                           placeholder={`Add skill to "${cat.categoryName}"...`}
-                          className="flex-1 bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+                          className="flex-1 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
                         />
                         <button
                           type="button"
@@ -664,13 +664,13 @@ export const SkillsForm: React.FC = () => {
 
                       {/* Category-specific AI Inline Suggestions */}
                       {hasSuggestions && (
-                        <div className="p-2.5 bg-purple-950/20 border border-purple-900/40 rounded-xl space-y-1.5 animate-in fade-in duration-200">
+                        <div className="p-2.5 bg-purple-50 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900/40 rounded-xl space-y-1.5 animate-in fade-in duration-200">
                           <div className="flex items-center justify-between text-[11px]">
-                            <span className="flex items-center gap-1.5 font-semibold text-purple-300">
-                              <Bot className="w-3.5 h-3.5 text-purple-400" />
+                            <span className="flex items-center gap-1.5 font-semibold text-purple-700 dark:text-purple-300">
+                              <Bot className="w-3.5 h-3.5 text-purple-500 dark:text-purple-400" />
                               <span>AI Suggestions for &quot;{cat.categoryName}&quot;</span>
                             </span>
-                            <span className="text-[10px] text-slate-500">Click to add</span>
+                            <span className="text-[10px] text-slate-400 dark:text-slate-500">Click to add</span>
                           </div>
                           <div className="flex flex-wrap gap-1.5 pt-0.5">
                             {inlineSuggestions[cat.id].map((suggested, idx) => (
@@ -678,9 +678,9 @@ export const SkillsForm: React.FC = () => {
                                 key={idx}
                                 type="button"
                                 onClick={() => handleAddSkillToSpecificCategory(cat.id, suggested)}
-                                className="group inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-900/40 hover:bg-purple-800/60 text-purple-200 border border-purple-800/60 text-xs font-medium transition active:scale-95 cursor-pointer"
+                                className="group inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-purple-100 hover:bg-purple-200/80 dark:bg-purple-900/40 dark:hover:bg-purple-800/60 text-purple-800 dark:text-purple-200 border border-purple-200 dark:border-purple-800/60 text-xs font-medium transition active:scale-95 cursor-pointer"
                               >
-                                <Plus className="w-3 h-3 text-purple-400 group-hover:scale-125 transition-transform" />
+                                <Plus className="w-3 h-3 text-purple-500 dark:text-purple-400 group-hover:scale-125 transition-transform" />
                                 <span>{suggested}</span>
                               </button>
                             ))}
@@ -697,8 +697,8 @@ export const SkillsForm: React.FC = () => {
       </div>
 
       {/* Footer Navigation Button to Next Section */}
-      <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
-        <span className="text-xs text-slate-400 font-medium">Step 5 of 7: Core Competencies</span>
+      <div className="pt-4 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
+        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Step 5 of 7: Core Competencies</span>
         <button
           type="button"
           onClick={() => setActiveTab('education')}

@@ -19,14 +19,14 @@ export const EducationForm: React.FC = () => {
   };
 
   return (
-    <div className="p-4 space-y-4 text-slate-200">
+    <div className="p-4 space-y-4 text-slate-800 dark:text-slate-200">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <GraduationCap className="w-4 h-4 text-blue-400" />
+          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <GraduationCap className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             Education History
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Degrees, academic institutions, graduation dates, and relevant honors.
           </p>
         </div>
@@ -39,11 +39,11 @@ export const EducationForm: React.FC = () => {
       </div>
 
       {education.length === 0 ? (
-        <div className="p-8 border border-dashed border-slate-800 rounded-xl text-center text-slate-400 text-xs space-y-2">
+        <div className="p-8 border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl text-center text-slate-500 dark:text-slate-400 text-xs space-y-2 bg-slate-50/50 dark:bg-slate-900/30">
           <p>No education history added yet.</p>
           <button
             onClick={handleAdd}
-            className="px-3 py-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 bg-blue-950/40 rounded-lg border border-blue-900/60 inline-flex items-center gap-1"
+            className="px-3 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900/60 inline-flex items-center gap-1"
           >
             <Plus className="w-3.5 h-3.5" /> Add Degree
           </button>
@@ -51,14 +51,14 @@ export const EducationForm: React.FC = () => {
       ) : (
         <div className="space-y-4">
           {education.map((edu) => (
-            <div key={edu.id} className="bg-slate-900/80 border border-slate-800/80 rounded-xl p-4 space-y-3 shadow-sm">
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
-                <div className="font-bold text-xs text-white truncate max-w-[240px]">
+            <div key={edu.id} className="bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800/80 rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
+              <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800/80 pb-2.5">
+                <div className="font-bold text-xs text-slate-900 dark:text-white truncate max-w-[240px]">
                   {edu.degree || 'Untitled Degree'} {edu.institution ? `• ${edu.institution}` : ''}
                 </div>
                 <button
                   onClick={() => handleDelete(edu.id, edu.degree)}
-                  className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 rounded-lg transition"
+                  className="p-1.5 text-rose-500 dark:text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition"
                   title="Delete Entry"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -67,70 +67,70 @@ export const EducationForm: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">Degree / Major</label>
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Degree / Major</label>
                   <input
                     type="text"
                     value={edu.degree}
                     onChange={(e) => updateEducationItem(edu.id, { degree: e.target.value })}
                     placeholder="B.S. in Computer Science"
-                    className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                    className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">Institution / University</label>
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Institution / University</label>
                   <input
                     type="text"
                     value={edu.institution}
                     onChange={(e) => updateEducationItem(edu.id, { institution: e.target.value })}
                     placeholder="University of California, Berkeley"
-                    className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                    className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">Location</label>
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Location</label>
                   <input
                     type="text"
                     value={edu.location || ''}
                     onChange={(e) => updateEducationItem(edu.id, { location: e.target.value })}
                     placeholder="Berkeley, CA"
-                    className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                    className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
                   />
                 </div>
 
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Start Year</label>
+                    <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Start Year</label>
                     <input
                       type="text"
                       value={edu.startDate}
                       onChange={(e) => updateEducationItem(edu.id, { startDate: e.target.value })}
                       placeholder="2018"
-                      className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                      className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Graduation Year</label>
+                    <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Graduation Year</label>
                     <input
                       type="text"
                       value={edu.endDate}
                       onChange={(e) => updateEducationItem(edu.id, { endDate: e.target.value })}
                       placeholder="2022"
-                      className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                      className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
                     />
                   </div>
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-semibold text-slate-400 mb-1">GPA / Honors / Key Coursework (Optional)</label>
+                <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">GPA / Honors / Key Coursework (Optional)</label>
                 <input
                   type="text"
                   value={edu.gpa || ''}
                   onChange={(e) => updateEducationItem(edu.id, { gpa: e.target.value })}
                   placeholder="GPA: 3.8 / 4.0 • Magna Cum Laude • Dean's Honor List"
-                  className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                  className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
                 />
               </div>
             </div>
@@ -139,8 +139,8 @@ export const EducationForm: React.FC = () => {
       )}
 
       {/* Footer Navigation Button to Next Section */}
-      <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
-        <span className="text-xs text-slate-400 font-medium">Step 6 of 7: Education History</span>
+      <div className="pt-4 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
+        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Step 6 of 7: Education History</span>
         <button
           type="button"
           onClick={() => setActiveTab('projects')}

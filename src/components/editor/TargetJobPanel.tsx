@@ -226,28 +226,28 @@ export const TargetJobPanel: React.FC = () => {
   const totalCoreKeywords = matchedKeywords.length + missingKeywords.length;
 
   return (
-    <div className="p-4 space-y-4 text-slate-200">
+    <div className="p-4 space-y-4 text-slate-800 dark:text-slate-200">
       {/* 🎯 Step 1: Guided "Where to Start" Onboarding Micro-Banner */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3 relative overflow-hidden">
+      <div className="bg-white dark:bg-slate-900/90 border border-slate-200/90 dark:border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-40 h-40 bg-blue-500/10 rounded-full blur-2xl pointer-events-none" />
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-sm font-bold text-white flex items-center gap-1.5">
+              <span className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                 🎯 Step 1: Set Your Target Role
               </span>
             </div>
-            <p className="text-xs text-slate-300 leading-relaxed max-w-xl">
-              Paste the job description you're applying for. We'll automatically analyze required keywords so your resume passes ATS filters. <span className="text-slate-400">(Don't have one right now? Click 'Skip to Editor' to write freely).</span>
+            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed max-w-xl">
+              Paste the job description you're applying for. We'll automatically analyze required keywords so your resume passes ATS filters. <span className="text-slate-500 dark:text-slate-400">(Don't have one right now? Click 'Skip to Editor' to write freely).</span>
             </p>
           </div>
           <button
             type="button"
             onClick={() => setActiveTab('personal')}
-            className="self-start sm:self-center shrink-0 px-3.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700/80 border border-slate-700/80 text-xs font-semibold text-slate-200 hover:text-white transition flex items-center gap-1.5 cursor-pointer shadow-sm active:scale-98"
+            className="self-start sm:self-center shrink-0 px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-slate-200 dark:border-slate-700/80 text-xs font-semibold text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white transition flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-98"
           >
             <span>Skip to Personal Info</span>
-            <ArrowRight className="w-3.5 h-3.5 text-blue-400" />
+            <ArrowRight className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
           </button>
         </div>
       </div>
@@ -255,29 +255,29 @@ export const TargetJobPanel: React.FC = () => {
       {/* Title Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <Target className="w-4 h-4 text-blue-400" />
+          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Target className="w-4 h-4 text-blue-500 dark:text-blue-400" />
             Target Job & ATS Optimizer
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Extract keywords from job postings to maximize your resume match score.
           </p>
         </div>
       </div>
 
       {/* Target Job Input Form */}
-      <form onSubmit={handleUpdate} className="space-y-4 bg-slate-900/80 border border-slate-800/80 p-4 sm:p-5 rounded-2xl shadow-sm">
+      <form onSubmit={handleUpdate} className="space-y-4 bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800/80 p-4 sm:p-5 rounded-2xl shadow-xs">
         {/* Prominent Target Role Position Field */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-blue-500/15 border border-blue-500/30 text-[11px] font-extrabold uppercase tracking-wider text-blue-400">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-blue-50 dark:bg-blue-500/15 border border-blue-200 dark:border-blue-500/30 text-[11px] font-extrabold uppercase tracking-wider text-blue-700 dark:text-blue-400">
               🎯 TARGET ROLE / POSITION
             </span>
             {roleTitle.trim() && personal.jobTitle?.trim() !== roleTitle.trim() && (
               <button
                 type="button"
                 onClick={handleSyncToResumeTitle}
-                className="text-[10px] font-semibold text-blue-400 hover:text-blue-300 bg-blue-950/70 hover:bg-blue-900/80 border border-blue-800/80 px-2.5 py-0.5 rounded-md flex items-center gap-1 transition shadow-sm cursor-pointer"
+                className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/70 dark:hover:bg-blue-900/80 border border-blue-200 dark:border-blue-800/80 px-2.5 py-0.5 rounded-md flex items-center gap-1 transition shadow-xs cursor-pointer"
                 title="Sync this Target Role directly to your resume headline"
               >
                 <RefreshCw className="w-2.5 h-2.5" />
@@ -290,26 +290,26 @@ export const TargetJobPanel: React.FC = () => {
             value={roleTitle}
             onChange={(e) => setRoleTitle(e.target.value)}
             placeholder="e.g. Senior Full-Stack Engineer, Product Marketing Manager"
-            className="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-lg md:text-xl font-bold tracking-tight text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
+            className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-lg md:text-xl font-bold tracking-tight text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
           />
-          <p className="text-[11px] text-slate-400">
+          <p className="text-[11px] text-slate-500 dark:text-slate-400">
             e.g., Senior Full-Stack Engineer, Product Marketing Manager
           </p>
         </div>
 
         <div>
           <div className="flex items-center justify-between mb-1.5">
-            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
               Job Description (JD) & Keyword Diff
             </label>
-            <div className="flex items-center gap-1 bg-slate-800 p-0.5 rounded-lg border border-slate-700/80">
+            <div className="flex items-center gap-1 bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200 dark:border-slate-700/80">
               <button
                 type="button"
                 onClick={() => setJdViewMode('editor')}
                 className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-semibold rounded-md transition ${
                   jdViewMode === 'editor'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-white cursor-pointer'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer'
                 }`}
                 title="Edit raw job description text"
               >
@@ -326,8 +326,8 @@ export const TargetJobPanel: React.FC = () => {
                   jdViewMode === 'diff'
                     ? 'bg-blue-600 text-white shadow-sm'
                     : canShowDiff
-                    ? 'text-slate-400 hover:text-white cursor-pointer'
-                    : 'text-slate-600 opacity-40 cursor-not-allowed'
+                    ? 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white cursor-pointer'
+                    : 'text-slate-400 dark:text-slate-600 opacity-40 cursor-not-allowed'
                 }`}
                 title={
                   !canShowDiff
@@ -348,10 +348,10 @@ export const TargetJobPanel: React.FC = () => {
                 value={jdText}
                 onChange={(e) => setJdText(e.target.value)}
                 placeholder="Paste job posting requirements & responsibilities..."
-                className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl p-3 text-xs text-slate-200 placeholder-slate-500 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 leading-relaxed"
+                className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl p-3 text-xs text-slate-800 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-500 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 leading-relaxed"
               />
               {!canShowDiff && (
-                <p className="text-[11px] text-slate-400 italic">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 italic">
                   Paste a Job Description first to see keyword highlights (minimum 30 words & click &quot;Analyze &amp; Calculate Match&quot;).
                 </p>
               )}
@@ -359,31 +359,31 @@ export const TargetJobPanel: React.FC = () => {
           ) : (
             <div className="space-y-2">
               {/* Witty ATS Pro-Tip Banner */}
-              <div className="p-2.5 rounded-xl bg-blue-950/40 border border-blue-800/60 text-xs text-blue-200 flex items-start gap-2 shadow-sm font-sans">
-                <Sparkles className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
+              <div className="p-2.5 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 text-xs text-blue-900 dark:text-blue-200 flex items-start gap-2 shadow-xs font-sans">
+                <Sparkles className="w-4 h-4 text-blue-500 dark:text-blue-400 shrink-0 mt-0.5" />
                 <p className="text-[11px] leading-relaxed">
-                  <strong className="font-semibold text-blue-300 mr-1">ATS Pro-Tip:</strong>
+                  <strong className="font-semibold text-blue-700 dark:text-blue-300 mr-1">ATS Pro-Tip:</strong>
                   We don't do star ratings or percentage bars for skills. Workday and Taleo don't care that you're '90% good at React'—they want proof of impact.
                 </p>
               </div>
 
               {/* Interactive Diff Legend */}
-              <div className="flex items-center justify-between text-[11px] px-3 py-1.5 bg-slate-900/60 rounded-xl border border-slate-800 text-slate-300 font-sans">
+              <div className="flex items-center justify-between text-[11px] px-3 py-1.5 bg-slate-50 dark:bg-slate-900/60 rounded-xl border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 font-sans">
                 <span className="flex items-center gap-4">
-                  <span className="flex items-center gap-1.5 text-emerald-300 font-medium">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-sm" />
+                  <span className="flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300 font-medium">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 dark:bg-emerald-400 shadow-sm" />
                     Covered Keywords ({matchedKeywords.length})
                   </span>
-                  <span className="flex items-center gap-1.5 text-amber-300 font-medium">
+                  <span className="flex items-center gap-1.5 text-amber-700 dark:text-amber-300 font-medium">
                     <span className="w-2 h-2 rounded-full bg-amber-400 shadow-sm" />
                     Missing Keywords ({missingKeywords.length})
                   </span>
                 </span>
-                <span className="text-slate-400 font-sans hidden sm:inline text-[10px]">Click amber tags to add to skills</span>
+                <span className="text-slate-500 dark:text-slate-400 font-sans hidden sm:inline text-[10px]">Click amber tags to add to skills</span>
               </div>
 
               {/* Rendered Text with Calm, Modern Keyword Highlighting (De-coderized) */}
-              <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-4 max-h-56 overflow-y-auto custom-scrollbar font-sans text-xs leading-relaxed text-slate-300">
+              <div className="bg-slate-50 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl p-4 max-h-56 overflow-y-auto custom-scrollbar font-sans text-xs leading-relaxed text-slate-800 dark:text-slate-300">
                 {jdText.trim() ? (
                   (() => {
                     const allKws = [
@@ -424,7 +424,7 @@ export const TargetJobPanel: React.FC = () => {
                             return (
                               <mark
                                 key={i}
-                                className="bg-emerald-950/40 text-emerald-300 border border-emerald-800/50 rounded px-1.5 py-0.5 mx-0.5 font-medium inline-block shadow-sm"
+                                className="bg-emerald-100 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800/50 rounded px-1.5 py-0.5 mx-0.5 font-medium inline-block shadow-xs"
                                 title={`✓ Covered in resume: ${foundMatched}`}
                               >
                                 {part}
@@ -442,11 +442,11 @@ export const TargetJobPanel: React.FC = () => {
                                   e.stopPropagation();
                                   handleAddMissingKeywordToSkills(foundMissing, e);
                                 }}
-                                className="bg-amber-950/30 hover:bg-amber-900/40 text-amber-300 hover:text-amber-100 border border-amber-800/40 hover:border-amber-700/60 rounded px-1.5 py-0.5 mx-0.5 font-medium transition inline-flex items-center gap-1 active:scale-95 text-left cursor-pointer group shadow-sm"
+                                className="bg-amber-100 hover:bg-amber-200/70 dark:bg-amber-950/30 dark:hover:bg-amber-900/40 text-amber-900 dark:text-amber-300 hover:text-amber-950 dark:hover:text-amber-100 border border-amber-300 dark:border-amber-800/40 hover:border-amber-400 dark:hover:border-amber-700/60 rounded px-1.5 py-0.5 mx-0.5 font-medium transition inline-flex items-center gap-1 active:scale-95 text-left cursor-pointer group shadow-xs"
                                 title={`⚠️ Missing keyword: Click to add "${foundMissing}" to Skills`}
                               >
                                 <span>{part}</span>
-                                <span className="text-[10px] text-amber-300 group-hover:text-amber-100 bg-amber-900/50 px-1.5 py-0.2 rounded font-sans">
+                                <span className="text-[10px] text-amber-800 dark:text-amber-300 group-hover:text-amber-950 dark:group-hover:text-amber-100 bg-amber-200/80 dark:bg-amber-900/50 px-1.5 py-0.2 rounded font-sans">
                                   + Add to Skills
                                 </span>
                               </button>
@@ -459,7 +459,7 @@ export const TargetJobPanel: React.FC = () => {
                     );
                   })()
                 ) : (
-                  <p className="text-slate-500 italic">No job description text pasted yet. Click "Edit Raw Text" above to paste a job posting.</p>
+                  <p className="text-slate-400 dark:text-slate-500 italic">No job description text pasted yet. Click "Edit Raw Text" above to paste a job posting.</p>
                 )}
               </div>
             </div>
@@ -469,7 +469,7 @@ export const TargetJobPanel: React.FC = () => {
         <button
           type="submit"
           disabled={isAnalyzing}
-          className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 active:scale-98 rounded-xl transition shadow-md shadow-blue-600/20 disabled:opacity-60"
+          className="flex items-center gap-2 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 active:scale-98 rounded-xl transition shadow-md shadow-blue-600/20 disabled:opacity-60 cursor-pointer"
         >
           {isAnalyzing ? (
             <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -481,19 +481,19 @@ export const TargetJobPanel: React.FC = () => {
       </form>
 
       {/* ATS Match Score Card */}
-      <div className="bg-slate-900/80 border border-slate-800/80 p-4 rounded-xl space-y-4 shadow-sm">
+      <div className="bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800/80 p-4 rounded-xl space-y-4 shadow-xs">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-300">ATS Match Analysis</h3>
-            <p className="text-[11px] text-slate-400 mt-0.5">Real-time keyword match vs target requirements</p>
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-800 dark:text-slate-300">ATS Match Analysis</h3>
+            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Real-time keyword match vs target requirements</p>
           </div>
           <div
             className={`text-sm font-black px-3 py-1 rounded-full border transition ${
               atsScore >= 80
-                ? 'bg-emerald-950/70 text-emerald-400 border-emerald-800/80'
+                ? 'bg-emerald-100 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800/80'
                 : atsScore >= 65
-                ? 'bg-amber-950/70 text-amber-400 border-amber-800/80'
-                : 'bg-rose-950/70 text-rose-400 border-rose-800/80'
+                ? 'bg-amber-100 dark:bg-amber-950/70 text-amber-800 dark:text-amber-400 border-amber-300 dark:border-amber-800/80'
+                : 'bg-rose-100 dark:bg-rose-950/70 text-rose-800 dark:text-rose-400 border-rose-300 dark:border-rose-800/80'
             }`}
           >
             {atsScore}% Overall Match
@@ -501,7 +501,7 @@ export const TargetJobPanel: React.FC = () => {
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-slate-800/80 h-2 rounded-full overflow-hidden">
+        <div className="w-full bg-slate-100 dark:bg-slate-800/80 h-2 rounded-full overflow-hidden">
           <div
             className={`h-full transition-all duration-500 ${
               atsScore >= 80 ? 'bg-emerald-500' : atsScore >= 65 ? 'bg-amber-500' : 'bg-rose-500'
@@ -512,36 +512,36 @@ export const TargetJobPanel: React.FC = () => {
 
         {/* Reactive Health Check Metric Triplet: Matched, Missing, Resume Word Count */}
         <div className="grid grid-cols-3 gap-2 text-xs">
-          <div className="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 flex flex-col">
-            <span className="text-[10px] uppercase font-bold text-emerald-400 flex items-center gap-1">
-              <Check className="w-3 h-3 text-emerald-400" />
+          <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+              <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
               Matched
             </span>
-            <span className="text-base font-extrabold text-white mt-1">{matchedKeywords.length}</span>
-            <span className="text-[10px] text-slate-400">in resume</span>
+            <span className="text-base font-extrabold text-slate-900 dark:text-white mt-1">{matchedKeywords.length}</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400">in resume</span>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 flex flex-col">
-            <span className="text-[10px] uppercase font-bold text-amber-400 flex items-center gap-1">
-              <AlertCircle className="w-3 h-3 text-amber-400" />
+          <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-amber-600 dark:text-amber-400 flex items-center gap-1">
+              <AlertCircle className="w-3 h-3 text-amber-600 dark:text-amber-400" />
               Missing
             </span>
-            <span className="text-base font-extrabold text-white mt-1">{missingKeywords.length}</span>
-            <span className="text-[10px] text-slate-400">gaps to target</span>
+            <span className="text-base font-extrabold text-slate-900 dark:text-white mt-1">{missingKeywords.length}</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400">gaps to target</span>
           </div>
 
-          <div className="p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/60 flex flex-col">
-            <span className="text-[10px] uppercase font-bold text-blue-400 flex items-center gap-1">
-              <FileCheck2 className="w-3 h-3 text-blue-400" />
+          <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1">
+              <FileCheck2 className="w-3 h-3 text-blue-600 dark:text-blue-400" />
               Word Health
             </span>
-            <span className="text-base font-extrabold text-white mt-1">{resumeWordCount}</span>
+            <span className="text-base font-extrabold text-slate-900 dark:text-white mt-1">{resumeWordCount}</span>
             <span className={`text-[10px] font-semibold ${
               resumeWordCount >= 100 && resumeWordCount <= 600
-                ? 'text-emerald-400'
+                ? 'text-emerald-600 dark:text-emerald-400'
                 : resumeWordCount > 600
-                ? 'text-blue-300'
-                : 'text-amber-400'
+                ? 'text-blue-600 dark:text-blue-300'
+                : 'text-amber-600 dark:text-amber-400'
             }`}>
               {resumeWordCount >= 100 && resumeWordCount <= 600
                 ? '✓ Optimal'
@@ -554,34 +554,34 @@ export const TargetJobPanel: React.FC = () => {
 
         {/* Matched Keywords Cluster */}
         <div>
-          <div className="text-[11px] font-semibold text-emerald-400 flex items-center justify-between mb-2">
+          <div className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 flex items-center justify-between mb-2">
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>Matched Keywords ({matchedKeywords.length})</span>
             </span>
-            <span className="text-[10px] text-slate-500 font-mono">Found in resume</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono">Found in resume</span>
           </div>
           {matchedKeywords.length > 0 ? (
             <div className="flex flex-wrap gap-1.5">
               {matchedKeywords.map((kw, i) => (
                 <span
                   key={i}
-                  className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-emerald-950/60 text-emerald-300 border border-emerald-800/60 flex items-center gap-1 shadow-sm"
+                  className="text-[11px] font-mono px-2.5 py-1 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/60 flex items-center gap-1 shadow-xs"
                 >
-                  <Check className="w-3 h-3 text-emerald-400 shrink-0" />
+                  <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
                   {kw}
                 </span>
               ))}
             </div>
           ) : (
-            <p className="text-[11px] text-slate-500 italic">No matched keywords yet.</p>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">No matched keywords yet.</p>
           )}
         </div>
 
         {/* Missing Keywords Cluster with Isolated Pill State */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <div className="text-[11px] font-semibold text-amber-400 flex items-center gap-1.5">
+            <div className="text-[11px] font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
               <AlertCircle className="w-3.5 h-3.5" />
               <span>Missing Keywords ({missingKeywords.length})</span>
             </div>
@@ -589,7 +589,7 @@ export const TargetJobPanel: React.FC = () => {
               <button
                 type="button"
                 onClick={handleAddAllMissingKeywords}
-                className="text-[11px] font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 hover:underline transition cursor-pointer"
+                className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 flex items-center gap-1 hover:underline transition cursor-pointer"
               >
                 <PlusCircle className="w-3.5 h-3.5" />
                 Add All to Skills
@@ -612,23 +612,23 @@ export const TargetJobPanel: React.FC = () => {
                       handleAddMissingKeywordToSkills(kw, e);
                     }}
                     title={isSelectedOrAdded ? `"${kw}" is already in your skills` : `Click to add "${kw}" to Skills`}
-                    className={`group text-[11px] font-sans px-2.5 py-1 rounded-lg border flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-sm ${
+                    className={`group text-[11px] font-sans px-2.5 py-1 rounded-lg border flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-xs ${
                       isSelectedOrAdded
-                        ? 'bg-emerald-950/40 text-emerald-300 border-emerald-800/50'
-                        : 'bg-amber-950/30 hover:bg-amber-900/40 text-amber-300 hover:text-amber-100 border border-amber-800/40 hover:border-amber-700/60'
+                        ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800/50'
+                        : 'bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/30 dark:hover:bg-amber-900/40 text-amber-800 dark:text-amber-300 hover:text-amber-950 dark:hover:text-amber-100 border border-amber-200 dark:border-amber-800/40 hover:border-amber-300 dark:hover:border-amber-700/60'
                     }`}
                   >
                     {isSelectedOrAdded ? (
-                      <Check className="w-3 h-3 text-emerald-400" />
+                      <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                     ) : (
-                      <Plus className="w-3 h-3 text-amber-400 group-hover:scale-125 transition-transform" />
+                      <Plus className="w-3 h-3 text-amber-600 dark:text-amber-400 group-hover:scale-125 transition-transform" />
                     )}
                     <span>{kw}</span>
                     <span
                       className={`text-[10px] px-1 py-0.2 rounded font-sans ${
                         isSelectedOrAdded
-                          ? 'bg-emerald-900/40 text-emerald-300'
-                          : 'bg-amber-900/40 text-amber-400/80 group-hover:text-amber-200'
+                          ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-800 dark:text-emerald-300'
+                          : 'bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-400/80 group-hover:text-amber-950 dark:group-hover:text-amber-200'
                       }`}
                     >
                       {isSelectedOrAdded ? 'Added' : '+ Add'}
@@ -638,36 +638,36 @@ export const TargetJobPanel: React.FC = () => {
               })}
             </div>
           ) : totalCoreKeywords > 0 ? (
-            <p className="text-[11px] text-emerald-400 font-medium flex items-center gap-1">
+            <p className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
               <Check className="w-3.5 h-3.5" /> All core keywords matched!
             </p>
           ) : (
-            <p className="text-[11px] text-slate-500 italic">Enter a Job Description above to see missing keyword gaps.</p>
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 italic">Enter a Job Description above to see missing keyword gaps.</p>
           )}
         </div>
 
         {/* Dynamic Targeted Tips & Recommendations */}
-        <div className="pt-3 border-t border-slate-800/80 space-y-2">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+        <div className="pt-3 border-t border-slate-200 dark:border-slate-800/80 space-y-2">
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400" />
             <span>Targeted Optimization Tips</span>
           </div>
 
           {/* Dynamic Keyword Suggestion Tip */}
           {missingKeywords.length > 0 && (
-            <div className="p-2.5 rounded-lg bg-amber-950/30 border border-amber-800/40 text-xs text-amber-200/90 leading-relaxed font-sans">
-              <span className="font-semibold text-amber-300">Targeted Tip:</span> Consider adding:{' '}
-              <strong className="text-white font-medium">{missingKeywords.slice(0, 3).join(', ')}</strong>{' '}
+            <div className="p-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/40 text-xs text-amber-900 dark:text-amber-200/90 leading-relaxed font-sans">
+              <span className="font-semibold text-amber-800 dark:text-amber-300">Targeted Tip:</span> Consider adding:{' '}
+              <strong className="text-slate-900 dark:text-white font-medium">{missingKeywords.slice(0, 3).join(', ')}</strong>{' '}
               to your skills section or work experience bullets.
             </div>
           )}
 
           {/* Dynamic Recommendations List */}
           {jobTarget.matchFeedback?.recommendations && jobTarget.matchFeedback.recommendations.length > 0 && (
-            <ul className="space-y-1.5 text-xs text-slate-300">
+            <ul className="space-y-1.5 text-xs text-slate-700 dark:text-slate-300">
               {jobTarget.matchFeedback.recommendations.map((rec, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="text-blue-400 font-bold text-xs mt-0.5">•</span>
+                  <span className="text-blue-500 dark:text-blue-400 font-bold text-xs mt-0.5">•</span>
                   <span className="leading-relaxed">{rec}</span>
                 </li>
               ))}
@@ -677,8 +677,8 @@ export const TargetJobPanel: React.FC = () => {
       </div>
 
       {/* Footer Navigation Button to Next Section */}
-      <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
-        <span className="text-xs text-slate-400 font-medium">Step 1 of 7: Role & Keywords</span>
+      <div className="pt-4 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
+        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Step 1 of 7: Role & Keywords</span>
         <button
           type="button"
           onClick={() => setActiveTab('personal')}

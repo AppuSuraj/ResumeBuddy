@@ -19,14 +19,14 @@ export const ProjectsForm: React.FC = () => {
   };
 
   return (
-    <div className="p-4 space-y-4 text-slate-200">
+    <div className="p-4 space-y-4 text-slate-800 dark:text-slate-200">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <FolderGit2 className="w-4 h-4 text-blue-400" />
+          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <FolderGit2 className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             Featured Projects
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Demonstrate real-world application of your skills, tech stack, and results.
           </p>
         </div>
@@ -39,11 +39,11 @@ export const ProjectsForm: React.FC = () => {
       </div>
 
       {projects.length === 0 ? (
-        <div className="p-8 border border-dashed border-slate-800 rounded-xl text-center text-slate-400 text-xs space-y-2">
+        <div className="p-8 border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl text-center text-slate-500 dark:text-slate-400 text-xs space-y-2 bg-slate-50/50 dark:bg-slate-900/30">
           <p>No projects added yet.</p>
           <button
             onClick={handleAdd}
-            className="px-3 py-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 bg-blue-950/40 rounded-lg border border-blue-900/60 inline-flex items-center gap-1"
+            className="px-3 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-200 dark:border-blue-900/60 inline-flex items-center gap-1"
           >
             <Plus className="w-3.5 h-3.5" /> Add Project
           </button>
@@ -51,14 +51,14 @@ export const ProjectsForm: React.FC = () => {
       ) : (
         <div className="space-y-4">
           {projects.map((proj) => (
-            <div key={proj.id} className="bg-slate-900/80 border border-slate-800/80 rounded-xl p-4 space-y-3 shadow-sm">
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
-                <div className="font-bold text-xs text-white truncate max-w-[240px]">
+            <div key={proj.id} className="bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800/80 rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
+              <div className="flex items-center justify-between border-b border-slate-200/80 dark:border-slate-800/80 pb-2.5">
+                <div className="font-bold text-xs text-slate-900 dark:text-white truncate max-w-[240px]">
                   {proj.name || 'Untitled Project'}
                 </div>
                 <button
                   onClick={() => handleDelete(proj.id, proj.name)}
-                  className="p-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 rounded-lg transition"
+                  className="p-1.5 text-rose-500 dark:text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition"
                   title="Delete Project"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -67,18 +67,18 @@ export const ProjectsForm: React.FC = () => {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">Project Name</label>
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">Project Name</label>
                   <input
                     type="text"
                     value={proj.name}
                     onChange={(e) => updateProjectItem(proj.id, { name: e.target.value })}
                     placeholder="OmniDash Real-time Analytics"
-                    className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                    className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400 mb-1">
                     Tech Stack (comma separated)
                   </label>
                   <input
@@ -90,14 +90,14 @@ export const ProjectsForm: React.FC = () => {
                       })
                     }
                     placeholder="React, TypeScript, Node.js, PostgreSQL"
-                    className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                    className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white font-mono placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
                   />
                 </div>
               </div>
 
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="block text-[11px] font-semibold text-slate-400">
+                  <label className="block text-[11px] font-semibold text-slate-600 dark:text-slate-400">
                     Project Description & Outcomes
                   </label>
                   <button
@@ -109,7 +109,7 @@ export const ProjectsForm: React.FC = () => {
                         : `${current}• `;
                       updateProjectItem(proj.id, { description: next });
                     }}
-                    className="text-[10px] text-blue-400 hover:text-blue-300 bg-blue-950/40 border border-blue-900/50 rounded px-1.5 py-0.5 transition"
+                    className="text-[10px] text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 rounded-md px-2 py-0.5 transition font-semibold"
                   >
                     + Add Bullet •
                   </button>
@@ -119,9 +119,9 @@ export const ProjectsForm: React.FC = () => {
                   value={proj.description}
                   onChange={(e) => updateProjectItem(proj.id, { description: e.target.value })}
                   placeholder="• Designed and deployed high-throughput monitoring&#10;• Fetches live metrics and analyzes key performance indicators&#10;• Reduced latency by 35% through query caching"
-                  className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl p-2.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 leading-relaxed font-sans"
+                  className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl p-3 text-xs text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 leading-relaxed font-sans transition shadow-inner"
                 />
-                <p className="text-[10px] text-slate-500 mt-1">
+                <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
                   Each line or • bullet will automatically format as an aligned bullet point in your preview.
                 </p>
               </div>
@@ -131,8 +131,8 @@ export const ProjectsForm: React.FC = () => {
       )}
 
       {/* Footer Navigation Button to Next Section */}
-      <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
-        <span className="text-xs text-slate-400 font-medium">Step 7 of 7: Featured Projects</span>
+      <div className="pt-4 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
+        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Step 7 of 7: Featured Projects</span>
         <button
           type="button"
           onClick={() => setActiveTab('templates')}

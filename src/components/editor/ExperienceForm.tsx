@@ -153,31 +153,31 @@ export const ExperienceForm: React.FC = () => {
   };
 
   return (
-    <div className="p-4 space-y-4 text-slate-200">
+    <div className="p-4 space-y-4 text-slate-800 dark:text-slate-200">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-base font-bold text-white flex items-center gap-2">
-            <Briefcase className="w-4 h-4 text-blue-400" />
+          <h2 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Briefcase className="w-4 h-4 text-blue-500 dark:text-blue-400" />
             Work Experience
           </h2>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Highlight quantifiable achievements, metrics, and leadership impact.
           </p>
         </div>
         <button
           onClick={handleAddExperience}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition shadow-md shadow-blue-600/20 active:scale-98"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-500 rounded-xl transition shadow-md shadow-blue-600/20 active:scale-98 cursor-pointer"
         >
           <Plus className="w-4 h-4" /> Add Experience
         </button>
       </div>
 
       {experience.length === 0 ? (
-        <div className="p-8 border border-dashed border-slate-800 rounded-xl text-center text-slate-400 text-xs space-y-2">
+        <div className="p-8 border border-dashed border-slate-300 dark:border-slate-800 rounded-2xl text-center text-slate-500 dark:text-slate-400 text-xs space-y-2 bg-slate-50 dark:bg-transparent">
           <p>No work experience added yet.</p>
           <button
             onClick={handleAddExperience}
-            className="px-3 py-1.5 text-xs font-semibold text-blue-400 hover:text-blue-300 bg-blue-950/40 rounded-lg border border-blue-900/60 inline-flex items-center gap-1"
+            className="px-3 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-950/40 rounded-lg border border-blue-200 dark:border-blue-900/60 inline-flex items-center gap-1 cursor-pointer transition shadow-xs"
           >
             <Plus className="w-3.5 h-3.5" /> Add Your First Role
           </button>
@@ -185,17 +185,17 @@ export const ExperienceForm: React.FC = () => {
       ) : (
         <div className="space-y-4">
           {experience.map((exp, index) => (
-            <div key={exp.id} className="bg-slate-900/80 border border-slate-800/80 rounded-xl p-4 space-y-3 shadow-sm">
+            <div key={exp.id} className="bg-white dark:bg-slate-900/80 border border-slate-200/90 dark:border-slate-800/80 rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-xs">
               {/* Card Header & Controls */}
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-2.5">
-                <div className="font-bold text-xs text-white truncate max-w-[220px]">
+              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800/80 pb-2.5">
+                <div className="font-bold text-xs text-slate-900 dark:text-white truncate max-w-[220px]">
                   {exp.jobTitle || 'Untitled Position'} {exp.company ? `@ ${exp.company}` : ''}
                 </div>
                 <div className="flex items-center gap-1">
                   {index > 0 && (
                     <button
                       onClick={() => reorderExperience(index, index - 1)}
-                      className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                      className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
                       title="Move Up"
                     >
                       <ChevronUp className="w-4 h-4" />
@@ -204,7 +204,7 @@ export const ExperienceForm: React.FC = () => {
                   {index < experience.length - 1 && (
                     <button
                       onClick={() => reorderExperience(index, index + 1)}
-                      className="p-1 rounded text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                      className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
                       title="Move Down"
                     >
                       <ChevronDown className="w-4 h-4" />
@@ -212,7 +212,7 @@ export const ExperienceForm: React.FC = () => {
                   )}
                   <button
                     onClick={() => handleDeleteExperience(exp.id, exp.jobTitle)}
-                    className="p-1 rounded text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 ml-1 transition"
+                    className="p-1 rounded-lg text-rose-500 dark:text-rose-400 hover:text-rose-600 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-950/40 ml-1 transition cursor-pointer"
                     title="Delete Role"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -223,58 +223,58 @@ export const ExperienceForm: React.FC = () => {
               {/* Input Fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">Job Title</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-400 mb-1">Job Title</label>
                   <input
                     type="text"
                     value={exp.jobTitle}
                     onChange={(e) => updateExperienceItem(exp.id, { jobTitle: e.target.value })}
                     placeholder="Senior Software Engineer"
-                    className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                    className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">Company / Organization</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-400 mb-1">Company / Organization</label>
                   <input
                     type="text"
                     value={exp.company}
                     onChange={(e) => updateExperienceItem(exp.id, { company: e.target.value })}
                     placeholder="Acme Corp"
-                    className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                    className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold text-slate-400 mb-1">Location</label>
+                  <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-400 mb-1">Location</label>
                   <input
                     type="text"
                     value={exp.location}
                     onChange={(e) => updateExperienceItem(exp.id, { location: e.target.value })}
                     placeholder="San Francisco, CA (or Remote)"
-                    className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                    className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
                   />
                 </div>
 
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">Start Date</label>
+                    <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-400 mb-1">Start Date</label>
                     <input
                       type="text"
                       value={exp.startDate}
                       onChange={(e) => updateExperienceItem(exp.id, { startDate: e.target.value })}
                       placeholder="2021-03"
-                      className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                      className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-[11px] font-semibold text-slate-400 mb-1">End Date</label>
+                    <label className="block text-[11px] font-semibold text-slate-700 dark:text-slate-400 mb-1">End Date</label>
                     <input
                       type="text"
                       disabled={exp.isCurrent}
                       value={exp.isCurrent ? 'Present' : exp.endDate}
                       onChange={(e) => updateExperienceItem(exp.id, { endDate: e.target.value })}
                       placeholder="2023-08"
-                      className="w-full bg-slate-800/80 border border-slate-700/80 rounded-xl px-3 py-1.5 text-xs text-white disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500"
+                      className="w-full bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 rounded-xl px-3 py-2 text-xs text-slate-900 dark:text-white disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 focus:border-blue-500 transition shadow-inner"
                     />
                   </div>
                 </div>
@@ -287,9 +287,9 @@ export const ExperienceForm: React.FC = () => {
                   id={`current-${exp.id}`}
                   checked={exp.isCurrent}
                   onChange={(e) => updateExperienceItem(exp.id, { isCurrent: e.target.checked })}
-                  className="rounded border-slate-700 bg-slate-800 text-blue-600 focus:ring-blue-500"
+                  className="rounded border-slate-300 dark:border-slate-700 bg-slate-100 dark:bg-slate-800 text-blue-600 focus:ring-blue-500 cursor-pointer"
                 />
-                <label htmlFor={`current-${exp.id}`} className="text-xs text-slate-300 cursor-pointer">
+                <label htmlFor={`current-${exp.id}`} className="text-xs text-slate-700 dark:text-slate-300 cursor-pointer select-none">
                   I currently work in this position
                 </label>
               </div>
@@ -307,26 +307,26 @@ export const ExperienceForm: React.FC = () => {
                     <>
                       <div className="flex justify-between items-center mb-2">
                         <div className="flex items-center gap-2">
-                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                          <label className="block text-[11px] font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
                             Achievements & Bullet Bank
                           </label>
-                          <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700/60">
+                          <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700/60">
                             {activeCount} Active • {bankedCount} Banked
                           </span>
                         </div>
                         <button
                           type="button"
                           onClick={() => openAiBulletsModal(exp)}
-                          className="flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-blue-200 bg-gradient-to-r from-blue-900/90 to-indigo-900/90 hover:from-blue-800 hover:to-indigo-800 border border-blue-700/80 rounded-xl transition shadow-sm active:scale-95 cursor-pointer"
+                          className="flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-blue-700 dark:text-blue-200 bg-blue-50 hover:bg-blue-100 dark:bg-gradient-to-r dark:from-blue-900/90 dark:to-indigo-900/90 dark:hover:from-blue-800 dark:hover:to-indigo-800 border border-blue-200 dark:border-blue-700/80 rounded-xl transition shadow-xs active:scale-95 cursor-pointer"
                         >
-                          <Wand2 className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
+                          <Wand2 className="w-3.5 h-3.5 text-blue-500 dark:text-blue-400 animate-pulse" />
                           <span>AI Bullet Assistant</span>
                         </button>
                       </div>
 
                       {/* Playful Bullet Bank Helper Text */}
-                      <p className="text-[11px] text-slate-400 leading-relaxed mb-2.5 bg-slate-950/60 border border-slate-800/80 rounded-xl p-2.5 flex items-start gap-2 shadow-sm">
-                        <span className="text-blue-400 text-xs shrink-0 mt-0.5">💼</span>
+                      <p className="text-[11px] text-slate-600 dark:text-slate-400 leading-relaxed mb-2.5 bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800/80 rounded-xl p-2.5 flex items-start gap-2 shadow-xs">
+                        <span className="text-blue-500 dark:text-blue-400 text-xs shrink-0 mt-0.5">💼</span>
                         <span>
                           Your personal career vault. Keep 20+ brag points here and toggle only the best ones active. No more juggling 12 different Word docs named &apos;resume_final_v3_really_final.docx&apos;.
                         </span>
@@ -340,21 +340,21 @@ export const ExperienceForm: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => toggleBulletBankItem(exp.id, b.id)}
-                              className={`mt-1 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg border transition shrink-0 select-none ${
+                              className={`mt-1 flex items-center gap-1 text-[10px] font-bold px-2 py-1 rounded-lg border transition shrink-0 select-none cursor-pointer ${
                                 b.enabled
-                                  ? 'bg-emerald-950/70 text-emerald-300 border-emerald-800/80 hover:bg-emerald-900/80'
-                                  : 'bg-slate-800/70 text-slate-400 border-slate-700/80 hover:text-slate-200 hover:bg-slate-700/80'
+                                  ? 'bg-emerald-50 dark:bg-emerald-950/70 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-800/80 hover:bg-emerald-100 dark:hover:bg-emerald-900/80'
+                                  : 'bg-slate-100 dark:bg-slate-800/70 text-slate-600 dark:text-slate-400 border-slate-200 dark:border-slate-700/80 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-700/80'
                               }`}
                               title={b.enabled ? 'Active on resume (click to bank for other applications)' : 'Banked (click to activate on resume)'}
                             >
                               {b.enabled ? (
                                 <>
-                                  <Check className="w-3 h-3 text-emerald-400" />
+                                  <Check className="w-3 h-3 text-emerald-600 dark:text-emerald-400" />
                                   <span>Active</span>
                                 </>
                               ) : (
                                 <>
-                                  <Archive className="w-3 h-3 text-amber-400" />
+                                  <Archive className="w-3 h-3 text-amber-600 dark:text-amber-400" />
                                   <span>Banked</span>
                                 </>
                               )}
@@ -370,10 +370,10 @@ export const ExperienceForm: React.FC = () => {
                                 updateExperienceItem(exp.id, { bulletBank: updatedBank });
                               }}
                               placeholder="Describe an accomplishment with quantified metrics and impact..."
-                              className={`flex-1 rounded-xl p-2.5 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition ${
+                              className={`flex-1 rounded-xl p-2.5 text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-500/30 dark:focus:ring-blue-500/50 transition ${
                                 b.enabled
-                                  ? 'bg-slate-800/80 border border-slate-700/80 text-white'
-                                  : 'bg-slate-900/60 border border-slate-800/60 text-slate-400 italic line-through opacity-70'
+                                  ? 'bg-slate-50 hover:bg-slate-50/80 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 text-slate-900 dark:text-white shadow-inner'
+                                  : 'bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800/60 text-slate-400 italic line-through opacity-70'
                               }`}
                             />
 
@@ -382,14 +382,14 @@ export const ExperienceForm: React.FC = () => {
                                 type="button"
                                 onClick={() => openAiBulletsModal(exp, b.text, bIdx)}
                                 title="AI Polish this bullet"
-                                className="p-1.5 text-blue-400 hover:text-blue-200 hover:bg-blue-900/40 rounded-lg transition opacity-60 group-hover:opacity-100"
+                                className="p-1.5 text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-200 hover:bg-blue-50 dark:hover:bg-blue-900/40 rounded-lg transition opacity-60 group-hover:opacity-100 cursor-pointer"
                               >
                                 <Sparkles className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 type="button"
                                 onClick={() => deleteBulletFromBank(exp.id, b.id)}
-                                className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition opacity-60 group-hover:opacity-100"
+                                className="p-1.5 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-lg transition opacity-60 group-hover:opacity-100 cursor-pointer"
                                 title="Delete from Bullet Bank"
                               >
                                 <X className="w-3.5 h-3.5" />
@@ -401,7 +401,7 @@ export const ExperienceForm: React.FC = () => {
                         <button
                           type="button"
                           onClick={() => addBulletToBank(exp.id, 'Spearheaded project initiatives and delivered measurable business results.')}
-                          className="text-xs text-blue-400 hover:text-blue-300 font-semibold flex items-center gap-1 pt-1 transition"
+                          className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold flex items-center gap-1 pt-1 transition cursor-pointer"
                         >
                           <Plus className="w-3.5 h-3.5" /> Add Bullet to Bank
                         </button>
@@ -417,32 +417,32 @@ export const ExperienceForm: React.FC = () => {
 
       {/* AI Bullet Suggestions Modal */}
       {activeAiExpId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="bg-slate-900 border border-slate-800 text-slate-100 w-full max-w-xl rounded-2xl p-6 shadow-2xl space-y-4">
-            <div className="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 w-full max-w-xl rounded-2xl p-6 shadow-2xl space-y-4">
+            <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
               <div>
-                <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                  <Sparkles className="w-4 h-4 text-blue-400" />
+                <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-blue-500 dark:text-blue-400" />
                   AI Bullet Assistant (Google X-Y-Z Method)
                 </h3>
-                <p className="text-[11px] text-slate-400 mt-0.5">
+                <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
                   Accomplished [X], as measured by [Y], by doing [Z].
                 </p>
               </div>
-              <button onClick={() => setActiveAiExpId(null)} className="text-slate-400 hover:text-white p-1 rounded">
+              <button onClick={() => setActiveAiExpId(null)} className="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer">
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Mode Selector Pill Toggle */}
-            <div className="flex bg-slate-950/80 p-1 rounded-xl border border-slate-800 gap-1 text-xs">
+            <div className="flex bg-slate-100 dark:bg-slate-950/80 p-1 rounded-xl border border-slate-200 dark:border-slate-800 gap-1 text-xs">
               <button
                 type="button"
                 onClick={() => handleSwitchMode('contextual')}
                 className={`flex-1 py-1.5 px-3 rounded-lg font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                   bulletMode === 'contextual'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
               >
                 <span>🎯 Contextual Bullets</span>
@@ -454,7 +454,7 @@ export const ExperienceForm: React.FC = () => {
                 className={`flex-1 py-1.5 px-3 rounded-lg font-semibold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                   bulletMode === 'generalized'
                     ? 'bg-blue-600 text-white shadow-sm'
-                    : 'text-slate-400 hover:text-slate-200'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
                 }`}
               >
                 <span>🌐 Role Standard / Generalized</span>
@@ -464,8 +464,8 @@ export const ExperienceForm: React.FC = () => {
 
             {isGeneratingBullets ? (
               <div className="p-8 text-center space-y-2">
-                <div className="w-6 h-6 border-2 border-blue-400 border-t-transparent rounded-full animate-spin mx-auto" />
-                <p className="text-xs text-slate-400">
+                <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-xs text-slate-500 dark:text-slate-400">
                   {bulletMode === 'contextual'
                     ? 'Crafting contextual accomplishment bullets tailored to target job & company...'
                     : 'Generating universally accepted Google X-Y-Z achievement bullets...'}
@@ -473,7 +473,7 @@ export const ExperienceForm: React.FC = () => {
               </div>
             ) : (
               <div className="space-y-3">
-                <div className="flex items-center justify-between text-xs text-slate-400">
+                <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
                   <span>Select bullets to include ({selectedBullets.length} of {generatedBullets.length} selected):</span>
                   <button
                     type="button"
@@ -484,7 +484,7 @@ export const ExperienceForm: React.FC = () => {
                         setSelectedBullets([...generatedBullets]);
                       }
                     }}
-                    className="text-[11px] text-blue-400 hover:text-blue-300 font-semibold cursor-pointer"
+                    className="text-[11px] text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold cursor-pointer"
                   >
                     {selectedBullets.length === generatedBullets.length ? 'Deselect All' : 'Select All'}
                   </button>
@@ -499,14 +499,14 @@ export const ExperienceForm: React.FC = () => {
                         onClick={() => toggleBulletSelection(bullet)}
                         className={`p-3 rounded-xl border text-xs leading-relaxed cursor-pointer transition ${
                           isSelected
-                            ? 'bg-blue-950/70 border-blue-500/80 text-blue-100 ring-1 ring-blue-500/30'
-                            : 'bg-slate-800/60 border-slate-700/80 text-slate-300 hover:bg-slate-800'
+                            ? 'bg-blue-50 dark:bg-blue-950/70 border-blue-500/80 text-blue-900 dark:text-blue-100 ring-1 ring-blue-500/30'
+                            : 'bg-slate-50 hover:bg-slate-100/80 dark:bg-slate-800/60 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700/80 text-slate-700 dark:text-slate-300'
                         }`}
                       >
                         <div className="flex items-start gap-2.5">
                           <div
                             className={`w-4 h-4 rounded mt-0.5 flex items-center justify-center border text-xs shrink-0 transition ${
-                              isSelected ? 'bg-blue-600 border-blue-500 text-white' : 'border-slate-600'
+                              isSelected ? 'bg-blue-600 border-blue-500 text-white' : 'border-slate-300 dark:border-slate-600'
                             }`}
                           >
                             {isSelected && <Check className="w-3 h-3" />}
@@ -519,10 +519,10 @@ export const ExperienceForm: React.FC = () => {
                 </div>
 
                 {/* Actions Footer */}
-                <div className="flex flex-col sm:flex-row justify-between gap-2 pt-3 border-t border-slate-800">
+                <div className="flex flex-col sm:flex-row justify-between gap-2 pt-3 border-t border-slate-200 dark:border-slate-800">
                   <button
                     onClick={() => setActiveAiExpId(null)}
-                    className="px-3.5 py-1.5 text-xs text-slate-400 hover:text-white transition cursor-pointer self-start sm:self-auto"
+                    className="px-3.5 py-1.5 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white transition cursor-pointer self-start sm:self-auto"
                   >
                     Cancel
                   </button>
@@ -532,10 +532,10 @@ export const ExperienceForm: React.FC = () => {
                     <button
                       onClick={() => handleApplyBullets(activeAiExpId, false)}
                       disabled={selectedBullets.length === 0}
-                      className="px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 rounded-xl transition disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
+                      className="px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 rounded-xl transition disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
                       title="Store in your career vault without making them active immediately"
                     >
-                      <Archive className="w-3.5 h-3.5 text-amber-400" />
+                      <Archive className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                       <span>+ Add to Master Bullet Bank ({selectedBullets.length})</span>
                     </button>
 
@@ -557,8 +557,8 @@ export const ExperienceForm: React.FC = () => {
       )}
 
       {/* Footer Navigation Button to Next Section */}
-      <div className="pt-4 border-t border-slate-800/80 flex items-center justify-between">
-        <span className="text-xs text-slate-400 font-medium">Step 4 of 7: Work History</span>
+      <div className="pt-4 border-t border-slate-200 dark:border-slate-800/80 flex items-center justify-between">
+        <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Step 4 of 7: Work History</span>
         <button
           type="button"
           onClick={() => setActiveTab('skills')}

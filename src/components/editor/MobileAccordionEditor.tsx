@@ -161,10 +161,10 @@ export const MobileAccordionEditor: React.FC = () => {
         return (
           <div
             key={section.id}
-            className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
+            className={`rounded-2xl border transition-all duration-200 overflow-hidden shadow-xs ${
               isOpen
-                ? 'bg-slate-900 border-blue-500/50 shadow-lg shadow-blue-500/5 ring-1 ring-blue-500/20'
-                : 'bg-slate-900/70 border-slate-800/80 hover:border-slate-700/80 hover:bg-slate-800/50'
+                ? 'bg-white dark:bg-slate-900 border-blue-500/50 shadow-md shadow-blue-500/5 ring-1 ring-blue-500/20'
+                : 'bg-white/80 dark:bg-slate-900/70 border-slate-200/90 dark:border-slate-800/80 hover:border-slate-300 dark:hover:border-slate-700/80 hover:bg-slate-50/50 dark:hover:bg-slate-800/50'
             }`}
           >
             {/* Touch-Friendly Accordion Header Card (Min 48px height) */}
@@ -178,7 +178,7 @@ export const MobileAccordionEditor: React.FC = () => {
                   className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition ${
                     isOpen
                       ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/30'
-                      : 'bg-slate-800 text-slate-400'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -186,14 +186,14 @@ export const MobileAccordionEditor: React.FC = () => {
 
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="text-xs sm:text-sm font-bold text-white truncate">
+                    <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
                       {section.label}
                     </span>
                     {isComplete && !['templates', 'style'].includes(section.id) && (
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 dark:text-emerald-400 shrink-0" />
                     )}
                   </div>
-                  <p className="text-[11px] text-slate-400 truncate mt-0.5">
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
                     {section.subtitle}
                   </p>
                 </div>
@@ -201,8 +201,8 @@ export const MobileAccordionEditor: React.FC = () => {
 
               <div className="flex items-center gap-2 shrink-0">
                 <div
-                  className={`w-7 h-7 rounded-lg flex items-center justify-center bg-slate-800/80 text-slate-400 transition-transform duration-200 ${
-                    isOpen ? 'rotate-180 text-blue-400 bg-blue-950/60' : ''
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-slate-800/80 text-slate-500 dark:text-slate-400 transition-transform duration-200 ${
+                    isOpen ? 'rotate-180 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60' : ''
                   }`}
                 >
                   <ChevronDown className="w-4 h-4" />
@@ -212,7 +212,7 @@ export const MobileAccordionEditor: React.FC = () => {
 
             {/* Accordion Body Content */}
             {isOpen && (
-              <div className="border-t border-slate-800/80 p-3 sm:p-4 bg-slate-950/60 animate-in fade-in zoom-in-98 duration-150">
+              <div className="border-t border-slate-200/80 dark:border-slate-800/80 p-3 sm:p-4 bg-slate-50/50 dark:bg-slate-950/60 animate-in fade-in zoom-in-98 duration-150">
                 {section.component}
               </div>
             )}
